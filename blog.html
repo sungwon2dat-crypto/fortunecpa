@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>글 | 점쟁이 회계사</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { background: #010006; color: #ffffff; font-family: 'Nanum Myeongjo', serif; min-height: 100vh; overflow-x: hidden; }
@@ -17,23 +17,20 @@ body { background: #010006; color: #ffffff; font-family: 'Nanum Myeongjo', serif
   position: fixed; top: 0; left: 0; right: 0;
   display: flex; align-items: center; justify-content: space-between;
   padding: 20px 24px; z-index: 100;
-  background: linear-gradient(to bottom, rgba(1,0,6,0.92) 0%, transparent 100%);
+  background: linear-gradient(to bottom, rgba(1,0,6,0.95) 0%, transparent 100%);
 }
-.logo { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-weight: 600; letter-spacing: 0.2em; color: #fff; text-decoration: none; text-shadow: 0 0 20px rgba(200,168,110,0.5); }
-.back-btn { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 0.25em; color: rgba(200,168,110,0.7); text-decoration: none; transition: color 0.2s; }
+.logo { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-weight: 600; letter-spacing: 0.2em; color: #fff; text-decoration: none; }
+.back-btn { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 0.2em; color: rgba(200,168,110,0.8); text-decoration: none; transition: color 0.2s; }
 .back-btn:hover { color: #c8a86e; }
 
 .page {
   position: relative; z-index: 1;
-  min-height: 100vh;
-  padding: 100px 24px 80px;
+  min-height: 100vh; padding: 100px 24px 80px;
   max-width: 640px; margin: 0 auto;
-  background: radial-gradient(ellipse at 20% 10%, rgba(90,40,130,0.25) 0%, transparent 55%),
-              radial-gradient(ellipse at 80% 80%, rgba(20,55,110,0.2) 0%, transparent 55%);
 }
 
 .page-header { text-align: center; margin-bottom: 36px; }
-.section-label { font-family: 'Cormorant Garamond', serif; font-size: 10px; letter-spacing: 0.4em; color: rgba(200,168,110,0.5); text-transform: uppercase; margin-bottom: 14px; }
+.section-label { font-family: 'Cormorant Garamond', serif; font-size: 10px; letter-spacing: 0.4em; color: rgba(200,168,110,0.6); text-transform: uppercase; margin-bottom: 14px; }
 .page-title { font-size: clamp(26px, 7vw, 38px); font-weight: 400; color: #ffffff; letter-spacing: 0.04em; }
 .page-title span { color: #c8a86e; }
 .divider { width: 1px; height: 44px; background: linear-gradient(to bottom, transparent, rgba(200,168,110,0.4), transparent); margin: 20px auto 36px; }
@@ -42,127 +39,116 @@ body { background: #010006; color: #ffffff; font-family: 'Nanum Myeongjo', serif
 .write-btn {
   display: flex; align-items: center; justify-content: center; gap: 8px;
   width: 100%; padding: 14px;
-  background: rgba(200,168,110,0.07); border: 1px solid rgba(200,168,110,0.25);
-  border-radius: 4px; color: #c8a86e;
+  background: rgba(200,168,110,0.07); border: 1px solid rgba(200,168,110,0.3);
+  border-radius: 4px; color: #f0d890;
   font-family: 'Nanum Myeongjo', serif; font-size: 14px; font-weight: 700;
-  cursor: pointer; transition: all 0.25s; margin-bottom: 28px;
-  letter-spacing: 0.05em;
+  cursor: pointer; transition: all 0.25s; margin-bottom: 24px; letter-spacing: 0.05em;
 }
-.write-btn:hover { background: rgba(200,168,110,0.13); border-color: rgba(200,168,110,0.5); }
+.write-btn:hover { background: rgba(200,168,110,0.14); border-color: rgba(200,168,110,0.6); }
 
-/* 글쓰기 폼 */
-.write-form {
-  display: none;
-  background: rgba(255,255,255,0.03); border: 1px solid rgba(200,168,110,0.2);
-  border-radius: 6px; padding: 24px 20px; margin-bottom: 28px;
-}
+/* 폼 */
+.write-form { display: none; background: rgba(255,255,255,0.04); border: 1px solid rgba(200,168,110,0.2); border-radius: 6px; padding: 24px 20px; margin-bottom: 24px; }
 .write-form.open { display: block; }
 .form-row { margin-bottom: 14px; }
-.form-label { font-family: 'Cormorant Garamond', serif; font-size: 10px; letter-spacing: 0.3em; color: rgba(200,168,110,0.5); margin-bottom: 6px; display: block; text-transform: uppercase; }
+.form-label { font-family: 'Cormorant Garamond', serif; font-size: 10px; letter-spacing: 0.3em; color: rgba(200,168,110,0.7); margin-bottom: 6px; display: block; text-transform: uppercase; }
 .form-input, .form-select {
-  width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(200,168,110,0.2);
+  width: 100%; background: rgba(255,255,255,0.07); border: 1px solid rgba(200,168,110,0.25);
   border-radius: 3px; padding: 10px 12px; color: #ffffff;
-  font-family: 'Nanum Myeongjo', serif; font-size: 14px;
-  outline: none; transition: border-color 0.2s;
+  font-family: 'Nanum Myeongjo', serif; font-size: 14px; outline: none; transition: border-color 0.2s;
 }
-.form-input:focus, .form-select:focus { border-color: rgba(200,168,110,0.6); }
-.form-input::placeholder { color: rgba(255,255,255,0.25); }
+.form-input:focus, .form-select:focus { border-color: rgba(200,168,110,0.7); }
+.form-input::placeholder { color: rgba(255,255,255,0.3); }
 .form-textarea {
-  width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(200,168,110,0.2);
+  width: 100%; background: rgba(255,255,255,0.07); border: 1px solid rgba(200,168,110,0.25);
   border-radius: 3px; padding: 12px; color: #ffffff;
-  font-family: 'Nanum Myeongjo', serif; font-size: 14px; line-height: 1.8;
-  outline: none; resize: vertical; min-height: 180px; transition: border-color 0.2s;
+  font-family: 'Nanum Myeongjo', serif; font-size: 14px; line-height: 1.9;
+  outline: none; resize: vertical; min-height: 200px; transition: border-color 0.2s;
 }
-.form-textarea:focus { border-color: rgba(200,168,110,0.6); }
-.form-textarea::placeholder { color: rgba(255,255,255,0.25); }
+.form-textarea:focus { border-color: rgba(200,168,110,0.7); }
+.form-textarea::placeholder { color: rgba(255,255,255,0.3); }
 .form-select { appearance: none; cursor: pointer; }
 .form-select option { background: #0d0a1a; color: #ffffff; }
 .form-btns { display: flex; gap: 10px; margin-top: 18px; }
 .btn-submit {
-  flex: 1; padding: 12px; background: rgba(200,168,110,0.15);
-  border: 1px solid rgba(200,168,110,0.45); border-radius: 3px;
-  color: #c8a86e; font-family: 'Nanum Myeongjo', serif; font-size: 13px; font-weight: 700;
+  flex: 1; padding: 12px;
+  background: rgba(200,168,110,0.15); border: 1px solid rgba(200,168,110,0.5);
+  border-radius: 3px; color: #f0d890;
+  font-family: 'Nanum Myeongjo', serif; font-size: 13px; font-weight: 700;
   cursor: pointer; transition: all 0.2s; letter-spacing: 0.05em;
 }
-.btn-submit:hover { background: rgba(200,168,110,0.25); }
+.btn-submit:hover { background: rgba(200,168,110,0.28); }
+.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-cancel {
   padding: 12px 18px; background: none;
-  border: 1px solid rgba(255,255,255,0.1); border-radius: 3px;
-  color: rgba(255,255,255,0.4); font-family: 'Nanum Myeongjo', serif; font-size: 13px;
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 3px;
+  color: rgba(255,255,255,0.55); font-family: 'Nanum Myeongjo', serif; font-size: 13px;
   cursor: pointer; transition: all 0.2s;
 }
-.btn-cancel:hover { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.7); }
+.btn-cancel:hover { color: #ffffff; border-color: rgba(255,255,255,0.4); }
 
 /* 카테고리 필터 */
 .cat-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
 .cat-btn {
   font-family: 'Cormorant Garamond', serif; font-size: 10px; letter-spacing: 0.2em;
-  color: rgba(200,168,110,0.5); border: 1px solid rgba(200,168,110,0.18);
+  color: rgba(255,255,255,0.45); border: 1px solid rgba(255,255,255,0.12);
   padding: 5px 12px; border-radius: 2px; background: none; cursor: pointer;
   transition: all 0.2s; text-transform: uppercase;
 }
-.cat-btn.active, .cat-btn:hover { color: #c8a86e; border-color: rgba(200,168,110,0.5); background: rgba(200,168,110,0.07); }
+.cat-btn.active, .cat-btn:hover { color: #f0d890; border-color: rgba(200,168,110,0.5); background: rgba(200,168,110,0.08); }
 
 /* 게시글 목록 */
-.post-list { display: flex; flex-direction: column; gap: 2px; }
+.post-list { display: flex; flex-direction: column; }
 .post-item {
-  border-bottom: 1px solid rgba(200,168,110,0.1);
-  padding: 18px 4px; cursor: pointer; transition: all 0.2s;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding: 18px 6px; cursor: pointer; transition: padding-left 0.2s;
   display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
 }
-.post-item:hover { padding-left: 10px; }
+.post-item:hover { padding-left: 12px; }
 .post-item-left { flex: 1; min-width: 0; }
-.post-cat-tag {
-  font-family: 'Cormorant Garamond', serif; font-size: 9px; letter-spacing: 0.25em;
-  color: rgba(200,168,110,0.45); text-transform: uppercase; margin-bottom: 5px;
-}
-.post-title-text {
-  font-size: 15px; font-weight: 700; color: #ffffff;
-  line-height: 1.5; letter-spacing: 0.02em;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.post-date { font-family: 'Cormorant Garamond', serif; font-size: 11px; color: rgba(200,168,110,0.4); flex-shrink: 0; padding-top: 4px; }
+.post-cat-tag { font-family: 'Cormorant Garamond', serif; font-size: 9px; letter-spacing: 0.25em; color: rgba(200,168,110,0.6); text-transform: uppercase; margin-bottom: 5px; }
+.post-title-text { font-size: 15px; font-weight: 700; color: #ffffff; line-height: 1.5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.post-date { font-family: 'Cormorant Garamond', serif; font-size: 11px; color: rgba(255,255,255,0.35); flex-shrink: 0; padding-top: 4px; }
 
-/* 글 상세 보기 */
+/* 상세 뷰 */
 .post-detail { display: none; }
 .post-detail.open { display: block; }
-.detail-header { margin-bottom: 24px; }
-.detail-cat { font-family: 'Cormorant Garamond', serif; font-size: 10px; letter-spacing: 0.3em; color: rgba(200,168,110,0.5); text-transform: uppercase; margin-bottom: 10px; }
-.detail-title { font-size: clamp(20px, 5vw, 28px); font-weight: 700; color: #ffffff; line-height: 1.45; letter-spacing: 0.02em; margin-bottom: 10px; }
-.detail-date { font-family: 'Cormorant Garamond', serif; font-size: 11px; color: rgba(200,168,110,0.4); }
+.detail-cat { font-family: 'Cormorant Garamond', serif; font-size: 10px; letter-spacing: 0.3em; color: rgba(200,168,110,0.6); text-transform: uppercase; margin-bottom: 10px; }
+.detail-title { font-size: clamp(20px, 5vw, 28px); font-weight: 700; color: #ffffff; line-height: 1.45; margin-bottom: 10px; }
+.detail-date { font-family: 'Cormorant Garamond', serif; font-size: 11px; color: rgba(255,255,255,0.35); }
 .detail-divider { width: 100%; height: 1px; background: linear-gradient(to right, rgba(200,168,110,0.3), transparent); margin: 20px 0 28px; }
 .detail-body { font-size: 15px; line-height: 2.1; color: rgba(255,255,255,0.88); white-space: pre-wrap; word-break: keep-all; }
 .detail-actions { display: flex; gap: 10px; margin-top: 32px; }
 .btn-back-list {
   padding: 10px 18px; background: none;
-  border: 1px solid rgba(200,168,110,0.25); border-radius: 3px;
-  color: rgba(200,168,110,0.7); font-family: 'Nanum Myeongjo', serif; font-size: 12px;
+  border: 1px solid rgba(200,168,110,0.3); border-radius: 3px;
+  color: rgba(200,168,110,0.8); font-family: 'Nanum Myeongjo', serif; font-size: 12px;
   cursor: pointer; transition: all 0.2s;
 }
-.btn-back-list:hover { border-color: rgba(200,168,110,0.6); color: #c8a86e; }
+.btn-back-list:hover { border-color: #c8a86e; color: #f0d890; }
 .btn-delete {
   padding: 10px 18px; background: none;
   border: 1px solid rgba(255,80,80,0.2); border-radius: 3px;
   color: rgba(255,100,100,0.5); font-family: 'Nanum Myeongjo', serif; font-size: 12px;
   cursor: pointer; transition: all 0.2s;
 }
-.btn-delete:hover { border-color: rgba(255,80,80,0.5); color: rgba(255,100,100,0.9); }
+.btn-delete:hover { border-color: rgba(255,80,80,0.5); color: rgba(255,120,120,0.9); }
 
-/* 로딩 / 빈 상태 */
-.state-msg { text-align: center; padding: 48px 0; font-family: 'Cormorant Garamond', serif; font-size: 13px; letter-spacing: 0.2em; color: rgba(200,168,110,0.3); }
+.state-msg { text-align: center; padding: 48px 0; font-family: 'Cormorant Garamond', serif; font-size: 13px; letter-spacing: 0.2em; color: rgba(255,255,255,0.3); }
 
-/* 네이버 블로그 링크 */
+/* 네이버 블로그 */
 .naver-link {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  margin-top: 52px; padding: 16px 20px;
-  background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 52px; padding: 18px 20px;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
   border-radius: 4px; text-decoration: none; transition: all 0.25s;
 }
-.naver-link:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); }
-.naver-link-text { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 0.25em; color: rgba(255,255,255,0.35); text-transform: uppercase; }
-.naver-link-name { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.55); }
+.naver-link:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.18); }
+.naver-link-left {}
+.naver-link-label { font-family: 'Cormorant Garamond', serif; font-size: 9px; letter-spacing: 0.35em; color: rgba(255,255,255,0.3); text-transform: uppercase; margin-bottom: 5px; }
+.naver-link-name { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.7); }
+.naver-link-arrow { font-size: 18px; color: rgba(200,168,110,0.5); }
 
-.page-footer { margin-top: 40px; text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 10px; letter-spacing: 0.25em; color: rgba(180,160,120,0.18); }
+.page-footer { margin-top: 40px; text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 10px; letter-spacing: 0.25em; color: rgba(255,255,255,0.15); }
 </style>
 </head>
 <body>
@@ -188,7 +174,7 @@ body { background: #010006; color: #ffffff; font-family: 'Nanum Myeongjo', serif
       <div class="form-row">
         <label class="form-label">카테고리</label>
         <select class="form-select" id="f-cat">
-          <option value="">전체</option>
+          <option value="">선택 안함</option>
           <option value="투자">투자</option>
           <option value="점성술">점성술</option>
           <option value="회계">회계</option>
@@ -205,12 +191,12 @@ body { background: #010006; color: #ffffff; font-family: 'Nanum Myeongjo', serif
         <textarea class="form-textarea" id="f-body" placeholder="내용을 입력하세요"></textarea>
       </div>
       <div class="form-btns">
-        <button class="btn-submit" onclick="submitPost()">작성 완료</button>
+        <button class="btn-submit" id="btn-submit" onclick="submitPost()">작성 완료</button>
         <button class="btn-cancel" onclick="toggleForm()">취소</button>
       </div>
     </div>
 
-    <div class="cat-filter" id="cat-filter">
+    <div class="cat-filter">
       <button class="cat-btn active" data-cat="전체" onclick="filterCat(this)">전체</button>
       <button class="cat-btn" data-cat="투자" onclick="filterCat(this)">투자</button>
       <button class="cat-btn" data-cat="점성술" onclick="filterCat(this)">점성술</button>
@@ -224,20 +210,19 @@ body { background: #010006; color: #ffffff; font-family: 'Nanum Myeongjo', serif
     </div>
 
     <a class="naver-link" href="https://blog.naver.com/amaven" target="_blank" rel="noopener">
-      <div>
-        <div class="naver-link-text">Also writing on</div>
-        <div class="naver-link-name">네이버 블로그 →</div>
+      <div class="naver-link-left">
+        <div class="naver-link-label">Also writing on</div>
+        <div class="naver-link-name">네이버 블로그</div>
       </div>
+      <div class="naver-link-arrow">→</div>
     </a>
   </div>
 
   <!-- 상세 뷰 -->
   <div class="post-detail" id="detail-view">
-    <div class="detail-header">
-      <div class="detail-cat" id="d-cat"></div>
-      <div class="detail-title" id="d-title"></div>
-      <div class="detail-date" id="d-date"></div>
-    </div>
+    <div class="detail-cat" id="d-cat"></div>
+    <div class="detail-title" id="d-title"></div>
+    <div class="detail-date" id="d-date"></div>
     <div class="detail-divider"></div>
     <div class="detail-body" id="d-body"></div>
     <div class="detail-actions">
@@ -257,134 +242,121 @@ let currentPost = null;
 let currentCat = '전체';
 let formOpen = false;
 
-// 별 배경
+// 별
 (function(){
   const el = document.getElementById('stars');
   for(let i=0;i<120;i++){
-    const s = document.createElement('div'); s.className='star';
-    const sz=Math.random()*2+0.3, op=Math.random()*0.6+0.1, dur=Math.random()*4+2;
+    const s=document.createElement('div'); s.className='star';
+    const sz=Math.random()*2+0.3,op=Math.random()*0.6+0.1,dur=Math.random()*4+2;
     s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--o:${op};--d:${dur}s;animation-delay:${Math.random()*5}s;`;
     el.appendChild(s);
   }
 })();
 
-// 폼 토글
 function toggleForm(){
   formOpen = !formOpen;
   document.getElementById('write-form').classList.toggle('open', formOpen);
   if(!formOpen){
-    document.getElementById('f-title').value = '';
-    document.getElementById('f-body').value = '';
-    document.getElementById('f-cat').value = '';
+    document.getElementById('f-title').value='';
+    document.getElementById('f-body').value='';
+    document.getElementById('f-cat').value='';
   }
 }
 
-// 글 목록 불러오기
 async function loadPosts(){
-  document.getElementById('list-state').style.display = 'block';
-  document.getElementById('list-state').textContent = '불러오는 중...';
+  const state = document.getElementById('list-state');
+  state.style.display='block';
+  state.textContent='불러오는 중...';
   try {
-    const res = await fetch(API);
+    const res = await fetch(API + '?action=list');
     const data = await res.json();
     allPosts = data.posts || [];
     renderList();
   } catch(e) {
-    document.getElementById('list-state').textContent = '불러오기 실패. 잠시 후 다시 시도해주세요.';
+    state.textContent='불러오기 실패. 잠시 후 다시 시도해주세요.';
   }
 }
 
-// 목록 렌더링
 function renderList(){
   const list = document.getElementById('post-list');
   const state = document.getElementById('list-state');
-  const filtered = currentCat === '전체' ? allPosts : allPosts.filter(p => p.category === currentCat);
-
-  // 기존 아이템 제거
-  list.querySelectorAll('.post-item').forEach(el => el.remove());
-
-  if(filtered.length === 0){
-    state.style.display = 'block';
-    state.textContent = '아직 작성된 글이 없습니다.';
+  list.querySelectorAll('.post-item').forEach(el=>el.remove());
+  const filtered = currentCat==='전체' ? allPosts : allPosts.filter(p=>p.category===currentCat);
+  if(filtered.length===0){
+    state.style.display='block';
+    state.textContent='아직 작성된 글이 없습니다.';
     return;
   }
-  state.style.display = 'none';
-
-  filtered.forEach(post => {
-    const item = document.createElement('div');
-    item.className = 'post-item';
-    item.innerHTML = `
+  state.style.display='none';
+  filtered.forEach(post=>{
+    const item=document.createElement('div'); item.className='post-item';
+    item.innerHTML=`
       <div class="post-item-left">
-        ${post.category ? `<div class="post-cat-tag">${post.category}</div>` : ''}
-        <div class="post-title-text">${escHtml(post.title)}</div>
+        ${post.category?`<div class="post-cat-tag">${esc(post.category)}</div>`:''}
+        <div class="post-title-text">${esc(post.title)}</div>
       </div>
-      <div class="post-date">${post.date ? post.date.substring(0,10) : ''}</div>
-    `;
-    item.addEventListener('click', () => showDetail(post));
+      <div class="post-date">${post.date?String(post.date).substring(0,10):''}</div>`;
+    item.addEventListener('click',()=>showDetail(post));
     list.appendChild(item);
   });
 }
 
-// 카테고리 필터
 function filterCat(btn){
-  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  currentCat = btn.dataset.cat;
+  currentCat=btn.dataset.cat;
   renderList();
 }
 
-// 글 작성
 async function submitPost(){
-  const title = document.getElementById('f-title').value.trim();
-  const body  = document.getElementById('f-body').value.trim();
-  const cat   = document.getElementById('f-cat').value;
-  if(!title){ alert('제목을 입력해주세요.'); return; }
-  if(!body){  alert('본문을 입력해주세요.'); return; }
+  const title=document.getElementById('f-title').value.trim();
+  const body=document.getElementById('f-body').value.trim();
+  const cat=document.getElementById('f-cat').value;
+  if(!title){alert('제목을 입력해주세요.');return;}
+  if(!body){alert('본문을 입력해주세요.');return;}
 
-  const btn = document.querySelector('.btn-submit');
-  btn.textContent = '저장 중...'; btn.disabled = true;
+  const btn=document.getElementById('btn-submit');
+  btn.textContent='저장 중...'; btn.disabled=true;
 
   try {
-    await fetch(API, {
-      method: 'POST',
-      body: JSON.stringify({ action:'create', title, content:body, category:cat }),
-    });
+    // GET 방식으로 전송 (CORS 우회)
+    const url = API
+      + '?action=create'
+      + '&title='    + encodeURIComponent(title)
+      + '&content='  + encodeURIComponent(body)
+      + '&category=' + encodeURIComponent(cat);
+    await fetch(url);
     toggleForm();
     await loadPosts();
   } catch(e) {
     alert('저장 중 오류가 발생했습니다.');
   } finally {
-    btn.textContent = '작성 완료'; btn.disabled = false;
+    btn.textContent='작성 완료'; btn.disabled=false;
   }
 }
 
-// 상세 보기
 function showDetail(post){
-  currentPost = post;
-  document.getElementById('d-cat').textContent   = post.category || '';
-  document.getElementById('d-title').textContent = post.title || '';
-  document.getElementById('d-date').textContent  = post.date  || '';
-  document.getElementById('d-body').textContent  = post.content || '';
-  document.getElementById('list-view').style.display   = 'none';
+  currentPost=post;
+  document.getElementById('d-cat').textContent=post.category||'';
+  document.getElementById('d-title').textContent=post.title||'';
+  document.getElementById('d-date').textContent=post.date||'';
+  document.getElementById('d-body').textContent=post.content||'';
+  document.getElementById('list-view').style.display='none';
   document.getElementById('detail-view').classList.add('open');
   window.scrollTo(0,0);
 }
 
-// 목록으로
 function showList(){
-  document.getElementById('list-view').style.display   = 'block';
+  document.getElementById('list-view').style.display='block';
   document.getElementById('detail-view').classList.remove('open');
-  currentPost = null;
+  currentPost=null;
 }
 
-// 삭제
 async function deletePost(){
   if(!currentPost) return;
   if(!confirm('이 글을 삭제할까요?')) return;
   try {
-    await fetch(API, {
-      method: 'POST',
-      body: JSON.stringify({ action:'delete', id: currentPost.id }),
-    });
+    await fetch(API + '?action=delete&id=' + encodeURIComponent(currentPost.id));
     showList();
     await loadPosts();
   } catch(e) {
@@ -392,9 +364,8 @@ async function deletePost(){
   }
 }
 
-function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// 초기 로드
 loadPosts();
 </script>
 </body>
