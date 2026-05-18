@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>노리터 | 점쟁이 회계사</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600&family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #010006; color: #ffffff; font-family: 'Nanum Myeongjo', serif; min-height: 100vh; overflow-x: hidden; }
+
+.stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.star { position: absolute; background: #fff; border-radius: 50%; animation: twinkle var(--d,3s) ease-in-out infinite alternate; opacity: var(--o,0.6); }
+@keyframes twinkle { from { opacity: var(--o,0.6); } to { opacity: calc(var(--o,0.6)*0.2); } }
+
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px; z-index: 100;
+  background: linear-gradient(to bottom, rgba(1,0,6,0.95) 0%, transparent 100%);
+}
+.logo { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-weight: 600; letter-spacing: 0.2em; color: #fff; text-decoration: none; }
+.back-btn { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 0.2em; color: rgba(200,168,110,0.8); text-decoration: none; transition: color 0.2s; }
+.back-btn:hover { color: #c8a86e; }
+
+.page { position: relative; z-index: 1; min-height: 100vh; padding: 100px 24px 80px; max-width: 680px; margin: 0 auto; }
+
+.page-header { text-align: center; margin-bottom: 14px; }
+.section-label { font-family: 'Cormorant Garamond', serif; font-size: 10px; letter-spacing: 0.4em; color: rgba(200,168,110,0.6); text-transform: uppercase; margin-bottom: 14px; }
+.page-title { font-size: clamp(26px, 7vw, 38px); font-weight: 400; color: #ffffff; letter-spacing: 0.04em; }
+.page-title span { color: #c8a86e; }
+.divider { width: 1px; height: 44px; background: linear-gradient(to bottom, transparent, rgba(200,168,110,0.4), transparent); margin: 20px auto 40px; }
+
+/* 게임 카드 그리드 */
+.game-grid { display: flex; flex-direction: column; gap: 16px; margin-bottom: 52px; }
+
+.game-card {
+  display: flex; align-items: center; gap: 20px;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px; padding: 20px;
+  text-decoration: none; color: #ffffff;
+  transition: all 0.3s; position: relative; overflow: hidden;
+}
+.game-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(0,245,255,0.04) 0%, transparent 60%);
+  opacity: 0; transition: opacity 0.3s;
+}
+.game-card:hover { border-color: rgba(0,245,255,0.3); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+.game-card:hover::before { opacity: 1; }
+
+.game-thumb {
+  width: 72px; height: 72px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 32px;
+  background: rgba(0,245,255,0.06); border: 1px solid rgba(0,245,255,0.15);
+}
+.game-info { flex: 1; min-width: 0; }
+.game-tag { font-family: 'Cormorant Garamond', serif; font-size: 9px; letter-spacing: 0.3em; color: rgba(0,245,255,0.5); text-transform: uppercase; margin-bottom: 6px; }
+.game-name { font-family: 'Nanum Gothic', sans-serif; font-weight: 800; font-size: 17px; color: #ffffff; margin-bottom: 5px; letter-spacing: 1px; }
+.game-desc { font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.6; }
+.game-arrow { font-size: 18px; color: rgba(0,245,255,0.4); flex-shrink: 0; transition: color 0.2s; }
+.game-card:hover .game-arrow { color: rgba(0,245,255,0.9); }
+.game-badge {
+  position: absolute; top: 12px; right: 12px;
+  font-family: 'Nanum Gothic', sans-serif; font-size: 9px; font-weight: 700;
+  letter-spacing: 1px; padding: 2px 8px; border-radius: 2px;
+}
+.badge-new { background: rgba(0,245,255,0.15); color: rgba(0,245,255,0.9); border: 1px solid rgba(0,245,255,0.3); }
+.badge-soon { background: rgba(255,234,0,0.1); color: rgba(255,234,0,0.6); border: 1px solid rgba(255,234,0,0.2); }
+.game-card.coming { opacity: 0.5; pointer-events: none; }
+
+/* 순위표 */
+.rank-section { margin-bottom: 40px; }
+.rank-title {
+  font-family: 'Cormorant Garamond', serif; font-size: 10px; letter-spacing: 0.4em;
+  color: rgba(200,168,110,0.6); text-transform: uppercase; text-align: center; margin-bottom: 20px;
+}
+.rank-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.rank-tab {
+  font-family: 'Nanum Gothic', sans-serif; font-size: 11px; font-weight: 700;
+  letter-spacing: 1px; padding: 6px 14px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.1);
+  background: none; color: rgba(255,255,255,0.4); cursor: pointer; transition: all 0.2s;
+}
+.rank-tab.active { border-color: rgba(0,245,255,0.4); color: rgba(0,245,255,0.9); background: rgba(0,245,255,0.07); }
+
+.rank-table { width: 100%; border-collapse: collapse; }
+.rank-table th {
+  font-family: 'Cormorant Garamond', serif; font-size: 9px; letter-spacing: 0.25em;
+  color: rgba(255,255,255,0.3); text-transform: uppercase; text-align: left;
+  padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.rank-table td {
+  padding: 11px 10px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 13px; color: rgba(255,255,255,0.8);
+}
+.rank-table tr:hover td { background: rgba(255,255,255,0.02); }
+.rank-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; color: rgba(255,255,255,0.3); width: 32px; }
+.rank-num.gold { color: #ffd700; font-weight: 700; font-size: 14px; }
+.rank-num.silver { color: #c0c0c0; font-weight: 700; }
+.rank-num.bronze { color: #cd7f32; font-weight: 700; }
+.rank-nick { font-family: 'Nanum Gothic', sans-serif; font-weight: 700; }
+.rank-score { font-family: 'Nanum Gothic', sans-serif; font-weight: 800; color: rgba(0,245,255,0.9); text-align: right; }
+.rank-wave { font-family: 'Cormorant Garamond', serif; font-size: 11px; color: rgba(255,255,255,0.3); text-align: right; }
+.rank-date { font-family: 'Cormorant Garamond', serif; font-size: 10px; color: rgba(255,255,255,0.25); text-align: right; }
+
+.rank-empty { text-align: center; padding: 32px; font-family: 'Cormorant Garamond', serif; font-size: 12px; letter-spacing: 0.2em; color: rgba(255,255,255,0.2); }
+.rank-loading { text-align: center; padding: 24px; font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 0.2em; color: rgba(0,245,255,0.3); }
+
+.page-footer { text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 10px; letter-spacing: 0.25em; color: rgba(255,255,255,0.12); }
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+
+<div class="topbar">
+  <a class="logo" href="index.html">FORTUNECPA · 점쟁이 회계사</a>
+  <a class="back-btn" href="index.html">← BACK</a>
+</div>
+
+<div class="page">
+  <div class="page-header">
+    <p class="section-label">Playground</p>
+    <h1 class="page-title"><span>노리터</span></h1>
+  </div>
+  <div class="divider"></div>
+
+  <!-- 게임 목록 -->
+  <div class="game-grid">
+    <a class="game-card" href="turret-siege.html">
+      <div class="game-thumb">🛸</div>
+      <div class="game-info">
+        <div class="game-tag">ACTION · SHOOTING</div>
+        <div class="game-name">TURRET SIEGE</div>
+        <div class="game-desc">UFO를 조종해 밀려오는 적을 막아라. 웨이브가 높아질수록 보스가 등장한다.</div>
+      </div>
+      <div class="game-arrow">→</div>
+      <div class="game-badge badge-new">NEW</div>
+    </a>
+
+    <div class="game-card coming">
+      <div class="game-thumb">🃏</div>
+      <div class="game-info">
+        <div class="game-tag">PUZZLE · MEMORY</div>
+        <div class="game-name">TAROT MEMORY</div>
+        <div class="game-desc">타로 카드 78장으로 만드는 기억력 게임. 준비 중.</div>
+      </div>
+      <div class="game-arrow">→</div>
+      <div class="game-badge badge-soon">SOON</div>
+    </div>
+
+    <div class="game-card coming">
+      <div class="game-thumb">📈</div>
+      <div class="game-info">
+        <div class="game-tag">STRATEGY · FINANCE</div>
+        <div class="game-name">CHART MASTER</div>
+        <div class="game-desc">주식 차트를 보고 고점과 저점을 맞춰라. 준비 중.</div>
+      </div>
+      <div class="game-arrow">→</div>
+      <div class="game-badge badge-soon">SOON</div>
+    </div>
+  </div>
+
+  <!-- 순위표 -->
+  <div class="rank-section">
+    <p class="rank-title">Hall of Fame</p>
+    <div class="rank-tabs">
+      <button class="rank-tab active" onclick="loadRank('turret')">TURRET SIEGE</button>
+    </div>
+    <div id="rank-content">
+      <div class="rank-loading">순위 불러오는 중...</div>
+    </div>
+  </div>
+
+  <p class="page-footer">© FORTUNECPA · ALL RIGHTS RESERVED</p>
+</div>
+
+<script>
+const SCORE_API = 'https://script.google.com/macros/s/AKfycbyt6M_Lx_JfSCOVh9U8JxfjXo9CLAAZhy2j2tC73GEOqqUzYkbNndBzOX8T12Vj5W_pwg/exec';
+
+// 별
+(function(){
+  const el = document.getElementById('stars');
+  for(let i=0;i<120;i++){
+    const s=document.createElement('div'); s.className='star';
+    const sz=Math.random()*2+0.3,op=Math.random()*0.6+0.1,dur=Math.random()*4+2;
+    s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--o:${op};--d:${dur}s;animation-delay:${Math.random()*5}s;`;
+    el.appendChild(s);
+  }
+})();
+
+async function loadRank(game){
+  const el = document.getElementById('rank-content');
+  el.innerHTML = '<div class="rank-loading">불러오는 중...</div>';
+  try {
+    const res = await fetch(SCORE_API + '?action=list');
+    const data = await res.json();
+    const rankings = data.rankings || [];
+    if(rankings.length === 0){
+      el.innerHTML = '<div class="rank-empty">아직 등록된 기록이 없습니다</div>';
+      return;
+    }
+    const medals = ['🥇','🥈','🥉'];
+    const numClass = ['gold','silver','bronze'];
+    let html = `<table class="rank-table">
+      <thead><tr>
+        <th style="width:40px">#</th>
+        <th>닉네임</th>
+        <th style="text-align:right">점수</th>
+        <th style="text-align:right">웨이브</th>
+        <th style="text-align:right">날짜</th>
+      </tr></thead><tbody>`;
+    rankings.forEach((r, i) => {
+      const medal = i < 3 ? medals[i] : '';
+      const nc = i < 3 ? numClass[i] : '';
+      html += `<tr>
+        <td class="rank-num ${nc}">${medal || (i+1)}</td>
+        <td class="rank-nick">${esc(r.nickname)}</td>
+        <td class="rank-score">${Number(r.score).toLocaleString()}</td>
+        <td class="rank-wave">${r.wave ? 'W'+r.wave : '-'}</td>
+        <td class="rank-date">${String(r.timestamp||'').substring(0,10)}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<div class="rank-empty">순위를 불러오지 못했습니다</div>';
+  }
+}
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+loadRank('turret');
+</script>
+</body>
+</html>
