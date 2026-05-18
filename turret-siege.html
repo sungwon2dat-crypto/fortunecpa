@@ -194,6 +194,10 @@
       </div>
       <div id="rankMsg"></div>
     </div>
+    <div id="rankTableWrap" style="margin-top:14px;display:none;max-height:200px;overflow-y:auto;">
+      <div style="font-size:0.6rem;letter-spacing:2px;color:rgba(0,245,255,0.5);margin-bottom:8px;text-align:center;">— TOP 10 —</div>
+      <div id="rankTableContent"></div>
+    </div>
   </div>
 </div>
 
@@ -327,14 +331,14 @@ const NEBULAE=Array.from({length:7},()=>({
 // ─── Player image ─────────────────────────────────────────────────────────────
 const planeImg=new Image();
 planeImg.crossOrigin='anonymous';
-planeImg.src='https://sungwon2dat-crypto.github.io/fortunecpa/image/plane.jpg';
+planeImg.src='https://sungwon2dat-crypto.github.io/fortunecpa/plane.jpg';
 let planeImgLoaded=false;
 planeImg.onload=()=>planeImgLoaded=true;
 
 // ─── Boss image ───────────────────────────────────────────────────────────────
 const bossImg=new Image();
 bossImg.crossOrigin='anonymous';
-bossImg.src='https://sungwon2dat-crypto.github.io/fortunecpa/image/boss.png';
+bossImg.src='https://sungwon2dat-crypto.github.io/fortunecpa/boss.png';
 let bossImgLoaded=false;
 bossImg.onload=()=>bossImgLoaded=true;
 
@@ -1160,11 +1164,42 @@ document.getElementById('rankSubmitBtn').addEventListener('click', async ()=>{
   if(result.ok){
     document.getElementById('rankMsg').textContent='✓ 순위 등록 완료!';
     btn.textContent='등록 완료';
+    loadRankInGame();
   } else {
-    document.getElementById('rankMsg').textContent='API 미연결 (SCORE_API 설정 필요)';
+    document.getElementById('rankMsg').textContent='등록 실패. 다시 시도해주세요.';
     btn.disabled=false; btn.textContent='순위 등록';
   }
 });
+
+async function loadRankInGame(){
+  const wrap = document.getElementById('rankTableWrap');
+  const content = document.getElementById('rankTableContent');
+  wrap.style.display='block';
+  content.innerHTML='<div style="text-align:center;color:rgba(0,245,255,0.4);font-size:0.65rem;padding:8px;">불러오는 중...</div>';
+  try {
+    const res = await fetch(SCORE_API + '?action=list');
+    const data = await res.json();
+    const rankings = (data.rankings||[]).slice(0,10);
+    if(rankings.length===0){ content.innerHTML='<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:0.65rem;padding:8px;">기록 없음</div>'; return; }
+    const medals=['🥇','🥈','🥉'];
+    let html='<table style="width:100%;border-collapse:collapse;">';
+    rankings.forEach((r,i)=>{
+      const isMe = r.nickname === document.getElementById('rankNickInput').value.trim();
+      html+=`<tr style="${isMe?'background:rgba(0,245,255,0.08);':''}">
+        <td style="padding:5px 6px;font-size:0.65rem;color:rgba(255,255,255,0.4);width:28px;">${i<3?medals[i]:(i+1)}</td>
+        <td style="padding:5px 6px;font-size:0.72rem;color:${isMe?'var(--neon-cyan)':'rgba(255,255,255,0.8)'};font-weight:${isMe?'800':'400'};">${esc(r.nickname)}</td>
+        <td style="padding:5px 6px;font-size:0.72rem;color:var(--neon-yellow);text-align:right;font-weight:700;">${Number(r.score).toLocaleString()}</td>
+        <td style="padding:5px 6px;font-size:0.62rem;color:rgba(255,255,255,0.3);text-align:right;">${r.wave?'W'+r.wave:''}</td>
+      </tr>`;
+    });
+    html+='</table>';
+    content.innerHTML=html;
+  } catch(e) {
+    content.innerHTML='<div style="text-align:center;color:rgba(255,80,80,0.5);font-size:0.65rem;padding:8px;">불러오기 실패</div>';
+  }
+}
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 requestAnimationFrame(loop);
 </script>
