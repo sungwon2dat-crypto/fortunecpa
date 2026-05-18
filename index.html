@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>점쟁이 회계사 | FortuneCPA</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #000;
+  color: #e8e0d0;
+  font-family: 'Nanum Myeongjo', serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 28px 100px;
+  background:
+    radial-gradient(ellipse at 15% 15%, rgba(90,40,130,0.4) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 75%, rgba(20,55,110,0.35) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 90%, rgba(60,20,80,0.2) 0%, transparent 50%),
+    #010006;
+  overflow: hidden;
+}
+
+.stars { position: absolute; inset: 0; pointer-events: none; }
+.star {
+  position: absolute;
+  background: #fff;
+  border-radius: 50%;
+  animation: twinkle var(--d,3s) ease-in-out infinite alternate;
+  opacity: var(--o,0.6);
+}
+@keyframes twinkle {
+  from { opacity: var(--o,0.6); transform: scale(1); }
+  to   { opacity: calc(var(--o,0.6)*0.25); transform: scale(0.7); }
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: float var(--fd,8s) ease-in-out infinite alternate;
+}
+@keyframes float {
+  from { transform: translateY(0) translateX(0); }
+  to   { transform: translateY(var(--fy,-20px)) translateX(var(--fx,10px)); }
+}
+
+/* 상단 바 */
+.topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  z-index: 100;
+  background: linear-gradient(to bottom, rgba(1,0,6,0.65) 0%, transparent 100%);
+}
+
+.logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: #ffffff;
+  white-space: nowrap;
+  text-shadow: 0 0 20px rgba(200,168,110,0.5);
+}
+
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  padding: 6px;
+  z-index: 200;
+}
+.hamburger span {
+  display: block;
+  width: 24px;
+  height: 1.5px;
+  background: #ffffff;
+  transition: all 0.35s ease;
+  transform-origin: center;
+}
+.hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+/* 메뉴 오버레이 */
+.menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(1,0,8,0.97);
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.menu-overlay.open { opacity: 1; pointer-events: all; }
+
+.menu-close {
+  position: absolute;
+  top: 20px; right: 22px;
+  width: 44px; height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: rgba(255,255,255,0.75);
+  font-size: 30px;
+  font-weight: 300;
+  font-family: 'Cormorant Garamond', serif;
+  transition: color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.menu-close:active { color: #c8a86e; }
+
+.menu-list {
+  list-style: none;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+.menu-list li { overflow: hidden; }
+.menu-list a {
+  font-family: 'Nanum Myeongjo', serif;
+  font-size: clamp(20px, 5vw, 26px);
+  font-weight: 400;
+  color: rgba(230,220,200,0.88);
+  text-decoration: none;
+  letter-spacing: 0.08em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  transform: translateY(28px);
+  opacity: 0;
+  transition: transform 0.45s ease, opacity 0.45s ease, color 0.25s ease;
+}
+.menu-list a span.en {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 11px;
+  letter-spacing: 0.35em;
+  color: rgba(200,168,110,0.45);
+}
+.menu-overlay.open .menu-list a { transform: translateY(0); opacity: 1; }
+.menu-overlay.open .menu-list li:nth-child(1) a { transition-delay: 0.06s; }
+.menu-overlay.open .menu-list li:nth-child(2) a { transition-delay: 0.12s; }
+.menu-overlay.open .menu-list li:nth-child(3) a { transition-delay: 0.18s; }
+.menu-overlay.open .menu-list li:nth-child(4) a { transition-delay: 0.24s; }
+.menu-overlay.open .menu-list li:nth-child(5) a { transition-delay: 0.30s; }
+.menu-list a:active { color: #c8a86e; }
+
+.menu-footer {
+  position: absolute;
+  bottom: 28px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  color: rgba(180,160,120,0.2);
+}
+
+/* 메인 콘텐츠 */
+.headline {
+  text-align: center;
+  margin-bottom: 12px;
+  animation: fadeUp 1.2s ease both;
+}
+.headline-sub {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 12px;
+  letter-spacing: 0.4em;
+  color: rgba(200,168,110,0.6);
+  margin-bottom: 22px;
+  text-transform: uppercase;
+}
+.headline-main {
+  font-family: 'Nanum Myeongjo', serif;
+  font-size: clamp(30px, 8vw, 50px);
+  font-weight: 400;
+  line-height: 1.45;
+  color: #f2eadc;
+  letter-spacing: 0.02em;
+}
+.headline-main span { color: #c8a86e; }
+
+.divider {
+  width: 1px;
+  height: 56px;
+  background: linear-gradient(to bottom, transparent, rgba(200,168,110,0.45), transparent);
+  margin: 28px auto;
+  animation: fadeUp 1.4s ease both;
+}
+
+.intro {
+  font-family: 'Nanum Myeongjo', serif;
+  font-size: 15px;
+  line-height: 2.1;
+  text-align: center;
+  color: rgba(220,210,190,0.65);
+  max-width: 280px;
+  margin-bottom: 60px;
+  animation: fadeUp 1.6s ease both;
+}
+
+.btn-group {
+  display: flex;
+  flex-direction: row;
+  gap: 28px;
+  justify-content: center;
+  animation: fadeUp 1.8s ease both;
+}
+
+.circle-btn {
+  width: 128px; height: 128px;
+  border-radius: 50%;
+  border: 1px solid rgba(200,168,110,0.35);
+  background: rgba(200,168,110,0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: #e8d8b8;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+.circle-btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200,168,110,0.18) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.circle-btn:active::before { opacity: 1; }
+.circle-btn:active { transform: scale(0.95); border-color: rgba(200,168,110,0.75); }
+
+.circle-btn-icon { font-size: 26px; margin-bottom: 8px; line-height: 1; }
+.circle-btn-label {
+  font-family: 'Nanum Myeongjo', serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.circle-btn-sub {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 10px;
+  color: rgba(200,168,110,0.55);
+  letter-spacing: 0.2em;
+  margin-top: 4px;
+}
+
+.footer-text {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: rgba(180,160,120,0.25);
+  white-space: nowrap;
+  animation: fadeUp 2s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 400px) {
+  .circle-btn { width: 112px; height: 112px; }
+  .btn-group { gap: 18px; }
+}
+</style>
+</head>
+<body>
+
+<div class="menu-overlay" id="menuOverlay">
+  <div class="menu-close" id="menuClose">&#x2715;</div>
+  <ul class="menu-list">
+    <li><a href="about.html">저자소개<span class="en">ABOUT</span></a></li>
+    <li><a href="blog.html">글<span class="en">BLOG</span></a></li>
+    <li><a href="games.html">노리터<span class="en">PLAYGROUND</span></a></li>
+    <li><a href="stock.html">주식현황판<span class="en">MARKET</span></a></li>
+    <li><a href="book.html">저자책 구매<span class="en">BOOK</span></a></li>
+  </ul>
+  <div class="menu-footer">FORTUNECPA © 2025</div>
+</div>
+
+<div class="topbar">
+  <div class="logo">FORTUNECPA · 점쟁이 회계사</div>
+  <div class="hamburger" id="hamburger">
+    <span></span><span></span><span></span>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="stars" id="stars"></div>
+  <div class="orb" style="width:320px;height:320px;background:radial-gradient(circle,rgba(80,35,120,0.2) 0%,transparent 70%);top:-80px;right:-100px;--fd:11s;--fy:-25px;--fx:-15px;"></div>
+  <div class="orb" style="width:220px;height:220px;background:radial-gradient(circle,rgba(20,70,140,0.18) 0%,transparent 70%);bottom:100px;left:-50px;--fd:13s;--fy:20px;--fx:25px;"></div>
+
+  <div class="headline">
+    <p class="headline-sub">welcome</p>
+    <h1 class="headline-main">어서오세요,<br><span>귀한 인연</span>이시군요</h1>
+  </div>
+
+  <div class="divider"></div>
+
+  <p class="intro">
+    숫자와 별자리 사이에서<br>
+    당신의 운명을 함께 읽겠습니다.<br>
+    어떤 점을 보시겠어요?
+  </p>
+
+  <div class="btn-group">
+    <a class="circle-btn" href="tarot.html">
+      <div class="circle-btn-icon">🃏</div>
+      <div class="circle-btn-label">타로점</div>
+      <div class="circle-btn-sub">TAROT</div>
+    </a>
+    <a class="circle-btn" href="juyeok.html">
+      <div class="circle-btn-icon">☯</div>
+      <div class="circle-btn-label">주역점</div>
+      <div class="circle-btn-sub">I·CHING</div>
+    </a>
+  </div>
+
+  <div class="footer-text">© FORTUNECPA · ALL RIGHTS RESERVED</div>
+</section>
+
+<script>
+  const hamburger = document.getElementById('hamburger');
+  const menuOverlay = document.getElementById('menuOverlay');
+  const menuClose = document.getElementById('menuClose');
+
+  function openMenu() { hamburger.classList.add('open'); menuOverlay.classList.add('open'); }
+  function closeMenu() { hamburger.classList.remove('open'); menuOverlay.classList.remove('open'); }
+
+  hamburger.addEventListener('click', openMenu);
+  menuClose.addEventListener('click', closeMenu);
+  menuOverlay.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 130; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2.2 + 0.4;
+    const opacity = Math.random() * 0.65 + 0.1;
+    const duration = Math.random() * 4 + 2;
+    s.style.cssText = `width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--o:${opacity};--d:${duration}s;animation-delay:${Math.random()*5}s;`;
+    starsEl.appendChild(s);
+  }
+</script>
+</body>
+</html>
