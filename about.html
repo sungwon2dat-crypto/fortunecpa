@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>저자소개 | 점쟁이 회계사</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #010006;
+  color: #e8e0d0;
+  font-family: 'Nanum Myeongjo', serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* 별 배경 */
+.stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.star {
+  position: absolute; background: #fff; border-radius: 50%;
+  animation: twinkle var(--d,3s) ease-in-out infinite alternate;
+  opacity: var(--o,0.6);
+}
+@keyframes twinkle {
+  from { opacity: var(--o,0.6); transform: scale(1); }
+  to   { opacity: calc(var(--o,0.6)*0.25); transform: scale(0.7); }
+}
+
+/* 배경 orb */
+.bg-orb {
+  position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
+}
+
+/* 상단 바 */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px; z-index: 100;
+  background: linear-gradient(to bottom, rgba(1,0,6,0.85) 0%, transparent 100%);
+}
+.logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px; font-weight: 600; letter-spacing: 0.2em;
+  color: #fff; text-shadow: 0 0 20px rgba(200,168,110,0.5);
+  text-decoration: none;
+}
+.back-btn {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 11px; letter-spacing: 0.25em;
+  color: rgba(200,168,110,0.6); background: none; border: none;
+  cursor: pointer; text-decoration: none;
+  transition: color 0.2s;
+}
+.back-btn:hover { color: rgba(200,168,110,1); }
+
+/* 메인 컨텐츠 */
+.page {
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 110px 28px 80px;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(90,40,130,0.3) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 70%, rgba(20,55,110,0.25) 0%, transparent 55%);
+}
+
+/* 섹션 라벨 */
+.section-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 10px; letter-spacing: 0.4em;
+  color: rgba(200,168,110,0.5); text-transform: uppercase;
+  margin-bottom: 18px; text-align: center;
+}
+
+/* 제목 */
+.page-title {
+  font-size: clamp(24px, 7vw, 36px);
+  font-weight: 400; line-height: 1.5;
+  color: #ffffff; text-align: center;
+  letter-spacing: 0.04em; margin-bottom: 10px;
+}
+.page-title span { color: #c8a86e; }
+
+/* 구분선 */
+.divider {
+  width: 1px; height: 50px;
+  background: linear-gradient(to bottom, transparent, rgba(200,168,110,0.4), transparent);
+  margin: 28px auto;
+}
+.divider-h {
+  width: 60px; height: 1px;
+  background: linear-gradient(to right, transparent, rgba(200,168,110,0.4), transparent);
+  margin: 32px auto;
+}
+
+/* 소개 카드 */
+.bio-card {
+  width: 100%; max-width: 360px;
+  background: rgba(200,168,110,0.04);
+  border: 1px solid rgba(200,168,110,0.15);
+  border-radius: 4px;
+  padding: 28px 26px;
+  margin-bottom: 40px;
+}
+.bio-text {
+  font-size: 15px; line-height: 2.1;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+  word-break: keep-all;
+}
+.bio-text strong { color: #c8a86e; font-weight: 700; }
+
+/* 키워드 태그 */
+.tags {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-top: 20px;
+}
+.tag {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 10px; letter-spacing: 0.2em;
+  color: rgba(200,168,110,0.55);
+  border: 1px solid rgba(200,168,110,0.2);
+  padding: 4px 10px; border-radius: 2px;
+}
+
+/* 책 섹션 */
+.books-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 10px; letter-spacing: 0.4em;
+  color: rgba(200,168,110,0.5); text-transform: uppercase;
+  text-align: center; margin-bottom: 20px;
+}
+.books {
+  width: 100%; max-width: 360px;
+  display: flex; flex-direction: column; gap: 14px;
+  margin-bottom: 48px;
+}
+.book-link {
+  display: flex; align-items: center; gap: 16px;
+  background: rgba(200,168,110,0.04);
+  border: 1px solid rgba(200,168,110,0.15);
+  border-radius: 4px; padding: 18px 20px;
+  text-decoration: none; color: #e8e0d0;
+  transition: all 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.book-link:hover, .book-link:active {
+  background: rgba(200,168,110,0.09);
+  border-color: rgba(200,168,110,0.4);
+}
+.book-icon { font-size: 26px; flex-shrink: 0; }
+.book-info { flex: 1; }
+.book-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 9px; letter-spacing: 0.3em;
+  color: rgba(200,168,110,0.45); margin-bottom: 5px;
+}
+.book-title-text {
+  font-size: 14px; font-weight: 700;
+  color: #ffffff; line-height: 1.5;
+  letter-spacing: 0.02em;
+}
+.book-arrow {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px; color: rgba(200,168,110,0.4);
+  flex-shrink: 0;
+}
+
+/* 이메일 푸터 */
+.contact-section {
+  width: 100%; max-width: 360px;
+  text-align: center;
+  padding-top: 8px;
+}
+.contact-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 9px; letter-spacing: 0.4em;
+  color: rgba(200,168,110,0.35); margin-bottom: 10px;
+  text-transform: uppercase;
+}
+.contact-email {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 14px; letter-spacing: 0.15em;
+  color: #ffffff;
+  text-decoration: none; transition: color 0.2s;
+}
+.contact-email:hover { color: rgba(200,168,110,1); }
+
+.page-footer {
+  margin-top: 52px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 10px; letter-spacing: 0.25em;
+  color: rgba(180,160,120,0.18); text-align: center;
+}
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+<div class="bg-orb" style="width:280px;height:280px;background:radial-gradient(circle,rgba(80,35,120,0.18) 0%,transparent 70%);top:-60px;right:-80px;"></div>
+<div class="bg-orb" style="width:200px;height:200px;background:radial-gradient(circle,rgba(20,70,140,0.14) 0%,transparent 70%);bottom:120px;left:-40px;"></div>
+
+<div class="topbar">
+  <a class="logo" href="index.html">FORTUNECPA · 점쟁이 회계사</a>
+  <a class="back-btn" href="index.html">← BACK</a>
+</div>
+
+<div class="page">
+
+  <p class="section-label">About the Author</p>
+  <h1 class="page-title">점쟁이 <span>회계사</span></h1>
+
+  <div class="divider"></div>
+
+  <div class="bio-card">
+    <p class="bio-text">
+      <strong>한국공인회계사(KICPA)</strong>.<br><br>
+      나이는 40 넘은 이후로 안 세고 있음.<br><br>
+      분당에서 두 아들을 키우고 있는데 정신수양이 따로 없음.<br><br>
+      회계법인 / PE / 인더스트리를 넘나들며 낙원을 찾아 헤매는 중.
+    </p>
+    <div class="tags">
+      <span class="tag">KICPA</span>
+      <span class="tag">PRIVATE EQUITY</span>
+      <span class="tag">명리학</span>
+      <span class="tag">서양점성술</span>
+      <span class="tag">타로</span>
+    </div>
+  </div>
+
+  <div class="divider-h"></div>
+
+  <p class="books-title">Books</p>
+  <div class="books">
+    <a class="book-link" href="https://www.yes24.com/product/goods/171568430" target="_blank" rel="noopener">
+      <div class="book-icon">📘</div>
+      <div class="book-info">
+        <div class="book-num">BOOK 01 · YES24</div>
+        <div class="book-title-text">회계사 아빠가 알려준<br>투자 레시피</div>
+      </div>
+      <div class="book-arrow">→</div>
+    </a>
+    <a class="book-link" href="https://www.yes24.com/product/goods/145344356" target="_blank" rel="noopener">
+      <div class="book-icon">📗</div>
+      <div class="book-info">
+        <div class="book-num">BOOK 02 · YES24</div>
+        <div class="book-title-text">기로에 선<br>회계사 만화</div>
+      </div>
+      <div class="book-arrow">→</div>
+    </a>
+    <a class="book-link" href="https://bookk.co.kr/bookStore/6a0468a09abca1023d5bf00c" target="_blank" rel="noopener">
+      <div class="book-icon">📙</div>
+      <div class="book-info">
+        <div class="book-num">BOOK 03 · BOOKK</div>
+        <div class="book-title-text">아빠가 쉽게 풀어주는<br>특목고 필독서</div>
+      </div>
+      <div class="book-arrow">→</div>
+    </a>
+  </div>
+
+  <div class="divider-h"></div>
+
+  <div class="contact-section">
+    <p class="contact-label">Contact</p>
+    <a class="contact-email" href="mailto:amaven@naver.com">amaven@naver.com</a>
+  </div>
+
+  <p class="page-footer">© FORTUNECPA · ALL RIGHTS RESERVED</p>
+</div>
+
+<script>
+const starsEl = document.getElementById('stars');
+for(let i = 0; i < 120; i++){
+  const s = document.createElement('div');
+  s.className = 'star';
+  const size = Math.random()*2+0.4, opacity = Math.random()*0.6+0.1, dur = Math.random()*4+2;
+  s.style.cssText=`width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--o:${opacity};--d:${dur}s;animation-delay:${Math.random()*5}s;`;
+  starsEl.appendChild(s);
+}
+</script>
+</body>
+</html>
