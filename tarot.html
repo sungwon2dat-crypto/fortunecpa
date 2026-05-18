@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>타로 · 점쟁이회계사</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; background: #03060f; overflow-x: hidden; font-family: 'Nanum Gothic', sans-serif; color: #ffffff; }
+
+.screen { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; position: relative; z-index: 1; }
+.screen.active { display: flex; }
+
+/* 은하수 배경 캔버스 */
+#galaxy-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+/* HEADER */
+.site-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 10px 20px; display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(to bottom, rgba(3,6,15,0.98), transparent);
+}
+.site-logo { font-family: 'Nanum Gothic', sans-serif; font-weight: 800; font-size: 14px; letter-spacing: 2px; color: #f0c040; text-shadow: 0 0 18px rgba(240,192,64,0.6); }
+.back-btn { background: none; border: 1px solid rgba(240,192,64,0.4); color: #f0c040; font-family: 'Nanum Gothic', sans-serif; font-size: 11px; padding: 5px 12px; cursor: pointer; border-radius: 3px; transition: all 0.2s; display: none; }
+.back-btn:hover { border-color: #f0c040; background: rgba(240,192,64,0.1); }
+.back-btn.visible { display: block; }
+
+/* SCREEN 1 */
+#screen-mode { gap: 32px; }
+.mode-title { text-align: center; }
+.mode-title h1 { font-family: 'Nanum Gothic', sans-serif; font-weight: 800; font-size: clamp(30px, 9vw, 46px); color: #f0c040; text-shadow: 0 0 30px rgba(240,192,64,0.6), 0 0 70px rgba(240,192,64,0.25); letter-spacing: 8px; margin-bottom: 10px; }
+.mode-title p { font-size: 12px; color: rgba(255,255,255,0.55); letter-spacing: 3px; }
+.star-dec { color: rgba(240,192,64,0.4); font-size: 18px; letter-spacing: 10px; text-align: center; }
+.mode-cards { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 320px; }
+.mode-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(240,192,64,0.2); border-radius: 8px; padding: 18px 22px; cursor: pointer; transition: all 0.25s; display: flex; align-items: center; gap: 16px; backdrop-filter: blur(4px); }
+.mode-card:hover { background: rgba(240,192,64,0.09); border-color: rgba(240,192,64,0.65); transform: translateX(5px); }
+.mode-icon { font-size: 24px; flex-shrink: 0; }
+.mode-label { font-weight: 800; font-size: 16px; color: #ffffff; }
+.mode-sub { font-size: 10px; color: rgba(240,192,64,0.5); margin-top: 3px; }
+
+/* SCREEN 2 */
+#screen-wheel { padding-top: 55px; padding-bottom: 10px; gap: 0; justify-content: flex-start; align-items: center; }
+.mode-badge { font-weight: 800; font-size: 14px; color: #f0c040; letter-spacing: 2px; margin-bottom: 10px; padding-top: 10px; text-shadow: 0 0 12px rgba(240,192,64,0.5); }
+#wheel-outer { width: 100%; max-width: 460px; display: flex; flex-direction: column; align-items: center; }
+#wheel-wrap {
+  position: relative;
+  width: 100%;
+  display: flex; align-items: flex-start; justify-content: center;
+  overflow: visible;
+}
+#wheel-canvas { display: block; max-width: 100%; }
+#spin-btn {
+  position: absolute;
+  width: 80px; height: 80px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, #2a1e08, #080604);
+  border: 2.5px solid #f0c040; color: #f0c040;
+  font-family: 'Nanum Gothic', sans-serif; font-weight: 800; font-size: 14px; letter-spacing: 1px;
+  cursor: pointer; transition: box-shadow 0.2s;
+  box-shadow: 0 0 22px rgba(240,192,64,0.3), inset 0 0 18px rgba(0,0,0,0.6);
+  transform: translate(-50%, -50%);
+  /* left/top set by JS as offset from wheel-wrap top-left */
+}
+#spin-btn:hover:not(:disabled) { box-shadow: 0 0 40px rgba(240,192,64,0.6); }
+#spin-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+#wheel-toast { min-height: 28px; text-align: center; font-size: 12px; color: rgba(240,192,64,0.85); letter-spacing: 2px; padding: 8px 16px; }
+
+/* SCREEN 3 */
+#screen-result { gap: 0; justify-content: flex-start; padding-top: 65px; padding-bottom: 40px; }
+.result-inner { width: 100%; max-width: 360px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.result-card-wrap { position: relative; width: 150px; height: 250px; }
+.result-card-wrap.reversed .card-img { transform: rotate(180deg); }
+.card-img { width: 150px; height: 250px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(240,192,64,0.5); box-shadow: 0 0 40px rgba(240,192,64,0.2), 0 8px 32px rgba(0,0,0,0.7); display: block; }
+.card-placeholder { width: 150px; height: 250px; border-radius: 8px; background: linear-gradient(155deg, #1a0835, #060318); border: 1.5px solid rgba(240,192,64,0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; box-shadow: 0 0 40px rgba(240,192,64,0.15), 0 8px 32px rgba(0,0,0,0.6); }
+.placeholder-sym { font-size: 48px; }
+.placeholder-nm { font-size: 10px; color: rgba(240,192,64,0.8); text-align: center; padding: 0 12px; line-height: 1.6; }
+.rev-tag { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); background: rgba(120,0,0,0.9); color: #ffbbbb; font-size: 10px; padding: 2px 8px; border-radius: 3px; white-space: nowrap; }
+.result-name { text-align: center; }
+.result-name h2 { font-weight: 800; font-size: 18px; color: #f0c040; letter-spacing: 1px; margin-bottom: 5px; }
+.result-name .ko { font-size: 13px; color: rgba(255,255,255,0.55); letter-spacing: 3px; }
+.result-box { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(240,192,64,0.18); border-radius: 8px; padding: 16px 18px; backdrop-filter: blur(4px); }
+.box-label { font-weight: 800; font-size: 10px; letter-spacing: 3px; color: rgba(240,192,64,0.65); margin-bottom: 10px; }
+.box-text { font-size: 15px; color: #ffffff; line-height: 1.9; }
+.stock-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.stock-tag { background: rgba(240,192,64,0.12); border: 1px solid rgba(240,192,64,0.35); color: #f0c040; font-weight: 700; font-size: 11px; letter-spacing: 1px; padding: 3px 10px; border-radius: 4px; }
+.stock-desc { font-size: 12px; color: rgba(255,255,255,0.6); line-height: 1.7; }
+.again-btn { margin-top: 8px; background: none; border: 1px solid rgba(240,192,64,0.45); color: #f0c040; font-family: 'Nanum Gothic', sans-serif; font-weight: 800; font-size: 13px; letter-spacing: 2px; padding: 11px 30px; cursor: pointer; border-radius: 4px; transition: all 0.2s; }
+.again-btn:hover { border-color: #f0c040; background: rgba(240,192,64,0.08); }
+</style>
+</head>
+<body>
+<canvas id="galaxy-canvas"></canvas>
+
+<header class="site-header">
+  <span class="site-logo">점쟁이회계사</span>
+  <button class="back-btn" id="back-btn" onclick="goBack()">← 뒤로</button>
+</header>
+
+<!-- SCREEN 1 -->
+<div class="screen active" id="screen-mode">
+  <div class="mode-title"><h1>TAROT</h1><p>오늘의 카드를 뽑아보세요</p></div>
+  <div class="star-dec">✦ ✧ ✦</div>
+  <div class="mode-cards">
+    <div class="mode-card" onclick="selectMode('stock')">
+      <span class="mode-icon">📈</span>
+      <div><div class="mode-label">미국 주식 추천</div><div class="mode-sub">CARD-BASED US STOCK PICK</div></div>
+    </div>
+    <div class="mode-card" onclick="selectMode('life')">
+      <span class="mode-icon">🔮</span>
+      <div><div class="mode-label">인생 조언</div><div class="mode-sub">LIFE GUIDANCE</div></div>
+    </div>
+    <div class="mode-card" onclick="selectMode('love')">
+      <span class="mode-icon">🌙</span>
+      <div><div class="mode-label">연애 조언</div><div class="mode-sub">LOVE &amp; RELATIONSHIP</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 2 -->
+<div class="screen" id="screen-wheel">
+  <div class="mode-badge" id="mode-badge"></div>
+  <div id="wheel-outer">
+    <div id="wheel-wrap">
+      <canvas id="wheel-canvas"></canvas>
+      <button id="spin-btn">SPIN</button>
+    </div>
+    <div id="wheel-toast"></div>
+  </div>
+</div>
+
+<!-- SCREEN 3 -->
+<div class="screen" id="screen-result">
+  <div class="result-inner">
+    <div class="result-card-wrap" id="result-card-wrap"></div>
+    <div class="result-name"><h2 id="result-en"></h2><div class="ko" id="result-ko"></div></div>
+    <div class="result-box"><div class="box-label" id="box-label"></div><div id="box-content"></div></div>
+    <button class="again-btn" onclick="goToWheel()">✦ 다시 뽑기 ✦</button>
+  </div>
+</div>
+
+<script>
+/* ── 은하수 배경 ── */
+(function(){
+  const c = document.getElementById('galaxy-canvas');
+  let W, H, stars = [], nebulae = [];
+
+  function resize(){
+    W = c.width = window.innerWidth;
+    H = c.height = window.innerHeight;
+    init();
+  }
+
+  function init(){
+    // 별 생성
+    stars = [];
+    for(let i = 0; i < 600; i++){
+      stars.push({
+        x: Math.random()*W, y: Math.random()*H,
+        r: Math.random()*1.4 + 0.2,
+        a: Math.random()*0.85 + 0.1,
+        twinkle: Math.random()*Math.PI*2,
+        speed: Math.random()*0.02 + 0.005
+      });
+    }
+    // 은하수 성운 레이어
+    nebulae = [];
+    for(let i = 0; i < 5; i++){
+      nebulae.push({
+        x: Math.random()*W, y: Math.random()*H,
+        rx: 80 + Math.random()*160, ry: 40 + Math.random()*80,
+        rot: Math.random()*Math.PI,
+        hue: [220,260,200,180,240][i],
+        a: 0.03 + Math.random()*0.05
+      });
+    }
+  }
+
+  function draw(){
+    const ctx = c.getContext('2d');
+    ctx.clearRect(0,0,W,H);
+
+    // 깊은 우주 배경 그라디언트
+    const bg = ctx.createRadialGradient(W*0.5, H*0.4, 0, W*0.5, H*0.5, Math.max(W,H)*0.8);
+    bg.addColorStop(0, 'rgba(8,4,28,1)');
+    bg.addColorStop(0.4, 'rgba(4,6,18,1)');
+    bg.addColorStop(1, 'rgba(1,2,8,1)');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0,0,W,H);
+
+    // 은하수 띠 (대각선 glow)
+    ctx.save();
+    ctx.translate(W*0.5, H*0.5);
+    ctx.rotate(-0.35);
+    const mw = ctx.createLinearGradient(-W, 0, W, 0);
+    mw.addColorStop(0,   'rgba(30,20,80,0)');
+    mw.addColorStop(0.3, 'rgba(50,30,120,0.07)');
+    mw.addColorStop(0.45,'rgba(80,60,180,0.13)');
+    mw.addColorStop(0.5, 'rgba(100,80,200,0.18)');
+    mw.addColorStop(0.55,'rgba(80,60,180,0.13)');
+    mw.addColorStop(0.7, 'rgba(50,30,120,0.07)');
+    mw.addColorStop(1,   'rgba(30,20,80,0)');
+    ctx.fillStyle = mw;
+    ctx.fillRect(-W, -H*0.8, W*2, H*1.6);
+    ctx.restore();
+
+    // 성운 blob
+    nebulae.forEach(n => {
+      ctx.save();
+      ctx.translate(n.x, n.y);
+      ctx.rotate(n.rot);
+      const g = ctx.createRadialGradient(0,0,0, 0,0,n.rx);
+      g.addColorStop(0, `hsla(${n.hue},70%,60%,${n.a})`);
+      g.addColorStop(0.5, `hsla(${n.hue+20},60%,50%,${n.a*0.4})`);
+      g.addColorStop(1, 'transparent');
+      ctx.scale(1, n.ry/n.rx);
+      ctx.beginPath(); ctx.arc(0,0,n.rx,0,Math.PI*2);
+      ctx.fillStyle = g; ctx.fill();
+      ctx.restore();
+    });
+
+    // 별
+    const t = Date.now()*0.001;
+    stars.forEach(s => {
+      const alpha = s.a * (0.6 + 0.4*Math.sin(s.twinkle + t*s.speed*10));
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      // 밝은 별은 색깔 살짝
+      const hue = s.r > 1.0 ? (s.x % 3 === 0 ? 200 : s.y % 3 === 0 ? 280 : 60) : 0;
+      ctx.fillStyle = hue ? `hsla(${hue},60%,90%,${alpha})` : `rgba(255,255,255,${alpha})`;
+      ctx.fill();
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  draw();
+})();
+
+/* ── IMAGE PATH ── */
+const MAJOR_FILES=['00-TheFool','01-TheMagician','02-TheHighPriestess','03-TheEmpress',
+  '04-TheEmperor','05-TheHierophant','06-TheLovers','07-TheChariot','08-Strength',
+  '09-TheHermit','10-WheelOfFortune','11-Justice','12-TheHangedMan','13-Death',
+  '14-Temperance','15-TheDevil','16-TheTower','17-TheStar','18-TheMoon',
+  '19-TheSun','20-Judgement','21-TheWorld'];
+function getImgPath(n){
+  if(n<=21) return `Cards-jpg/${MAJOR_FILES[n]}.jpg`;
+  if(n<=35) return `Cards-jpg/Wands${String(n-21).padStart(2,'0')}.jpg`;
+  if(n<=49) return `Cards-jpg/Cups${String(n-35).padStart(2,'0')}.jpg`;
+  if(n<=63) return `Cards-jpg/Swords${String(n-49).padStart(2,'0')}.jpg`;
+  return `Cards-jpg/Pentacles${String(n-63).padStart(2,'0')}.jpg`;
+}
+
+/* ── TAROT DATA ── */
+const TAROT=[
+  {n:0, en:'The Fool',           ko:'광대',          stock:['BITO','COIN'],  sd:'암호화폐 변동성을 탄 순수한 시작',       life:'일단 저질러봐, 모르면 뛰어들어',          love:'재지도 따지지 말고 일단 고백해'},
+  {n:1, en:'The Magician',       ko:'마법사',         stock:['BOTZ','NVDA'],  sd:'AI·로봇, 기술 창조의 시대',              life:'네 아이디어 지금이 실행할 때야',          love:'네가 먼저 연락해, 주도해'},
+  {n:2, en:'The High Priestess', ko:'여사제',         stock:['IBB','LLY'],    sd:'바이오테크, 연구의 신비로운 힘',          life:'촉이 맞아, 그 직감 믿어',                 love:'상대 말보다 행동을 봐'},
+  {n:3, en:'The Empress',        ko:'여황제',         stock:['MOO','ADM'],    sd:'농업·애그리비즈니스, 풍요의 생산성',     life:'심으면 자라, 키울 준비 해',               love:'있는 그대로 사랑받을 자격 있어'},
+  {n:4, en:'The Emperor',        ko:'황제',           stock:['ITA','LMT'],    sd:'방위산업, 권력과 국가의 힘',              life:'네가 룰을 정해, 주도권 잡아',             love:'관계의 선 명확히 그어'},
+  {n:5, en:'The Hierophant',     ko:'교황',           stock:['XLP','PG'],     sd:'필수소비재, 변하지 않는 전통',            life:'검증된 길로 가, 무리하지 마',             love:'서두르지 마, 순서대로 가'},
+  {n:6, en:'The Lovers',         ko:'연인',           stock:['XLY','AMZN'],   sd:'경기소비재, 유혹과 선택의 시장',          life:'둘 중 하나만 골라, 미루지 마',            love:'양다리 걸치지 마, 한 명만'},
+  {n:7, en:'The Chariot',        ko:'전차',           stock:['MTUM','META'],  sd:'모멘텀 주도, 추세의 전진',                life:'지금 밀어붙여, 속도 늦추지 마',          love:'망설이지 마, 직진해'},
+  {n:8, en:'Strength',           ko:'힘',             stock:['XLE','XOM'],    sd:'에너지 섹터, 용기의 힘',                  life:'겁먹지 마, 정면돌파야',                   love:'상대를 컨트롤하려 하지 말고 품어줘'},
+  {n:9, en:'The Hermit',         ko:'은둔자',         stock:['BIL','CHD'],    sd:'현금성 자산, 고독한 성찰',                life:'잠깐 빠져서 너 자신부터 봐',             love:'잠시 혼자 있어봐, 네 마음부터 봐'},
+  {n:10,en:'Wheel of Fortune',   ko:'운명의 바퀴',    stock:['RSP','BX'],     sd:'동일가중 S&P500, 섹터 로테이션',          life:'흐름이 바뀐다, 갈아탈 준비 해',          love:'인연의 주기가 바뀐다, 흐름에 맡겨'},
+  {n:11,en:'Justice',            ko:'정의',           stock:['ESGU','MSCI'],  sd:'ESG, 윤리적 기준의 공정한 투자',          life:'원칙대로 해, 편법은 부메랑이야',         love:'공정하게 대해, 다 돌아와'},
+  {n:12,en:'The Hanged Man',     ko:'매달린 자',      stock:['SHY','O'],      sd:'단기국채·리츠, 기다림의 인내',            life:'좀더 버텨보자, 존버가 답이다',           love:'지금은 기다릴 때야, 잡아당기지 마'},
+  {n:13,en:'Death',              ko:'죽음',           stock:['DBMF','UBER'],  sd:'관리선물, 위기 뒤 전환과 부활',           life:'끝내야 새로 시작돼, 미련 버려',          love:'이 관계는 끝났어, 보내줘'},
+  {n:14,en:'Temperance',         ko:'절제',           stock:['USMV','WMT'],   sd:'저변동성, 균형과 중용의 포트폴리오',      life:'과하지도 모자라지도, 중간 지켜',         love:'적당한 거리 유지해, 집착 금물'},
+  {n:15,en:'The Devil',          ko:'악마',           stock:['HYG','PM'],     sd:'하이일드, 고수익의 유혹과 위험',          life:'지금 그거 욕망이야, 정신 차려',          love:'그 관계 집착이야, 빠져나와'},
+  {n:16,en:'The Tower',          ko:'탑',             stock:['TLT','NOC'],    sd:'장기국채, 충격 시 가장 강력한 피난처',    life:'지금 그거 당장 멈춰',                     love:'환상이 깨진다, 현실 보이면 끝내'},
+  {n:17,en:'The Star',           ko:'별',             stock:['TAN','FSLR'],   sd:'태양광, 미래에너지의 희망',               life:'좋은 일이 있을 것 같아',                  love:'운명같은 사람 곧 나타난다'},
+  {n:18,en:'The Moon',           ko:'달',             stock:['SLV','WYNN'],   sd:'은·카지노, 달의 무의식과 감정',           life:'지금 보이는 게 다 아니야, 의심해',       love:'그 사람 진심 의심돼, 다 안 보여줘'},
+  {n:19,en:'The Sun',            ko:'태양',           stock:['GLD','NEE'],    sd:'금·클린에너지, 태양의 성공과 생명력',     life:'잘하고 있어! 계속 그래도!',             love:'당당하게 다가가, 행복 너의 것'},
+  {n:20,en:'Judgement',          ko:'심판',           stock:['ETHE','REGN'],  sd:'이더리움, 패러다임 전환의 각성',          life:'이제 깨어날 때, 결단 내려',             love:'옛 인연 다시 부른다, 용서해'},
+  {n:21,en:'The World',          ko:'세계',           stock:['EFA','SPGI'],   sd:'선진국 전체, 완성된 글로벌 포트폴리오',   life:'한 챕터가 완성됐어, 다음으로 가',       love:'완성된 인연, 행복한 결실'},
+  {n:22,en:'Ace of Wands',       ko:'완드 에이스',    stock:['VUG','TSLA'],   sd:'성장주, 새로운 불꽃의 시작',              life:'불씨 잡았어, 지금이 시작이야',           love:'설레임 찾아왔어, 놓치지 마'},
+  {n:23,en:'Two of Wands',       ko:'완드 2',         stock:['KWEB','BABA'],  sd:'중국 인터넷, 글로벌 전략의 큰 그림',      life:'큰 그림부터 그려, 행동은 그 다음',      love:'장기적으로 봐, 조급해하지 말고'},
+  {n:24,en:'Three of Wands',     ko:'완드 3',         stock:['INDA','TSM'],   sd:'인도·TSMC, 확장하는 신흥국',              life:'판을 넓혀, 밖으로 나가',                 love:'더 넓은 세상을 경험해보자'},
+  {n:25,en:'Four of Wands',      ko:'완드 4',         stock:['XLRE','PLD'],   sd:'부동산 섹터, 안정된 장소의 기반',         life:'뿌리내려, 여기가 너의 자리야',           love:'안정감 주는 사람, 소중히 해'},
+  {n:26,en:'Five of Wands',      ko:'완드 5',         stock:['KRE','JPM'],    sd:'지역은행, 치열한 경쟁의 현장',            life:'맞붙어, 피하면 더 끌려가',             love:'질투·싸움 심해, 대화로 풀어'},
+  {n:27,en:'Six of Wands',       ko:'완드 6',         stock:['IWM','ETSY'],   sd:'소형주, 돌파 시 강세의 승리',             life:'고개 들어, 네가 이긴 거야',             love:'고백 성공해, 자신감 가져'},
+  {n:28,en:'Seven of Wands',     ko:'완드 7',         stock:['HACK','PANW'],  sd:'사이버보안, 방어와 수호의 포지션',        life:'방어 단단히, 빈틈 보이지 마',           love:'흔들리지 마, 마음 지켜'},
+  {n:29,en:'Eight of Wands',     ko:'완드 8',         stock:['JETS','UAL'],   sd:'항공사, 빠른 이동과 신속한 타이밍',       life:'빨리 움직여, 타이밍 놓치지 마',         love:'고백하려면 지금, 더 늦으면 늦어'},
+  {n:30,en:'Nine of Wands',      ko:'완드 9',         stock:['USMV','MDLZ'],  sd:'저변동성, 방어적 균형의 경계',            life:'한 번만 더 버텨, 거의 다 왔어',         love:'상처 받았어도 마음 열어봐'},
+  {n:31,en:'Ten of Wands',       ko:'완드 10',        stock:['BIL','SYK'],    sd:'T-Bill·헬스케어, 짐 내려놓고 현금화',     life:'짐 좀 내려, 다 끌어안지 마',           love:'다 혼자 짊어지지 마, 당장 쉬어'},
+  {n:32,en:'Page of Wands',      ko:'완드 페이지',    stock:['LIT','ALB'],    sd:'리튬·배터리, 새로운 소재의 호기심',       life:'새 분야 배워봐, 호기심 따라가',         love:'설레는 시작이야, 표현해'},
+  {n:33,en:'Knight of Wands',    ko:'완드 나이트',    stock:['SMH','AMD'],    sd:'반도체, 뜨거운 열정과 돌진',              life:'돌진해, 망설이면 식어',                  love:'뜨거운 연애, 지금 표현해'},
+  {n:34,en:'Queen of Wands',     ko:'완드 퀸',        stock:['FDN','GOOGL'],  sd:'인터넷·빅테크, 디지털 카리스마',          life:'네 매력으로 끌어, 자신감 가져',         love:'매력 발산해, 당당해져'},
+  {n:35,en:'King of Wands',      ko:'완드 킹',        stock:['XLK','ADBE'],   sd:'기술 섹터, 혁신 리더의 비전',             life:'비전 선포해, 사람들 따라온다',          love:'리드하는 사랑, 네가 이끌어'},
+  {n:36,en:'Ace of Cups',        ko:'컵 에이스',      stock:['XLV','UNH'],    sd:'헬스케어, 치유와 돌봄의 새 시작',         life:'마음 열어, 새 인연 들어온다',           love:'새로운 인연이 시작된다'},
+  {n:37,en:'Two of Cups',        ko:'컵 2',           stock:['SDY','JNJ'],    sd:'배당귀족, 안정적 동반자 관계',            life:'둘이 함께 가, 혼자 하지 마',           love:'소울메이트 만남, 서로에게 진심으로'},
+  {n:38,en:'Three of Cups',      ko:'컵 3',           stock:['PEJ','DIS'],    sd:'레저·엔터테인먼트, 축제의 시장',          life:'축하할 일이야, 즐겨도 돼',             love:'함께 즐기는 자리 만들어, 관계 깊어져'},
+  {n:39,en:'Four of Cups',       ko:'컵 4',           stock:['BND','VZ'],     sd:'종합채권, 무난하지만 정체된 흐름',        life:'지루하면 신호야, 자리 바꿔봐',         love:'권태기야, 새로운 자극이 필요해'},
+  {n:40,en:'Five of Cups',       ko:'컵 5',           stock:['PFF','T'],      sd:'우선주, 안정적 인컴으로 위로',            life:'충분히 슬퍼해, 그래야 넘어가',         love:'이별의 아픔 있어도 남은 게 더 많아'},
+  {n:41,en:'Six of Cups',        ko:'컵 6',           stock:['IYK','HSY'],    sd:'미국 필수소비재, 전통과 향수의 힘',       life:'옛것에서 답 찾아, 추억이 힌트야',      love:'과거는 과거로, 앞을 봐'},
+  {n:42,en:'Seven of Cups',      ko:'컵 7',           stock:['ARKK','SHOP'],  sd:'혁신기업, 선택지 많은 환상의 시장',       life:'다 갖고 싶지? 하나만 골라',            love:'이상형 따지지 말고 현실 사람 봐'},
+  {n:43,en:'Eight of Cups',      ko:'컵 8',           stock:['EWJ','SONY'],   sd:'일본, 정적인 명상적 여정',                life:'조용히 떠나, 지금 자리는 아니야',      love:'이 관계 떠날 때야, 더 나은 행복으로'},
+  {n:44,en:'Nine of Cups',       ko:'컵 9',           stock:['VIG','COST'],   sd:'배당성장, 이뤄진 목표의 소원성취',        life:'소원 빌어, 이뤄질 때야',               love:'소원 이뤄진다, 고백해'},
+  {n:45,en:'Ten of Cups',        ko:'컵 10',          stock:['MOAT','CVX'],   sd:'경제적 해자, 지속되는 부와 가족',         life:'가족·뿌리 챙겨, 그게 다야',            love:'이 사람이 인연, 결혼까지 간다'},
+  {n:46,en:'Page of Cups',       ko:'컵 페이지',      stock:['VNQI','TRV'],   sd:'글로벌 리츠, 낭만적 이국적 감성',         life:'감수성 살려, 표현해봐',                love:'설레는 메시지 온다, 마음 열고 답해'},
+  {n:47,en:'Knight of Cups',     ko:'컵 나이트',      stock:['IEFA','BUD'],   sd:'선진국, 유럽·일본의 로맨틱한 문화',       life:'고백해, 제안 들어와도 받아',           love:'프로포즈 들어온다, 받아'},
+  {n:48,en:'Queen of Cups',      ko:'컵 퀸',          stock:['NOBL','PEP'],   sd:'배당귀족 ETF, 보살핌의 직관',             life:'주변 챙겨, 보살핌이 너의 무기야',      love:'상대를 품어줘, 그 사람 돌아온다'},
+  {n:49,en:'King of Cups',       ko:'컵 킹',          stock:['VNQ','AMT'],    sd:'미국 리츠, 관대한 안정의 파트너십',       life:'감정 다스려, 너그러워져',              love:'그릇이 넘치도록 주고받는 사랑'},
+  {n:50,en:'Ace of Swords',      ko:'소드 에이스',    stock:['IGV','MSFT'],   sd:'소프트웨어, 날카로운 지성의 돌파구',      life:'진실 봐, 명료하게 베어',               love:'할 말 있으면 지금, 돌려 말하지 마'},
+  {n:51,en:'Two of Swords',      ko:'소드 2',         stock:['SPLV','CL'],    sd:'저변동성, S&P500 중립의 교착',            life:'결정 미루지 마, 안 보고 있을 뿐',      love:'고백·이별 미루지 말고 결정해'},
+  {n:52,en:'Three of Swords',    ko:'소드 3',         stock:['TLT','GE'],     sd:'장기국채, 위험 회피처의 아픔',            life:'아픈 거 인정해, 회피하지 마',          love:'아프지만 이별이 답이야, 인정해'},
+  {n:53,en:'Four of Swords',     ko:'소드 4',         stock:['IEF','MRK'],    sd:'중기국채, 잠시 멈추는 명상',              life:'지금 좀 쉬어, 강제로라도',             love:'잠시 연애 쉬어가고 너 자신 돌봐'},
+  {n:54,en:'Five of Swords',     ko:'소드 5',         stock:['LQD','CRM'],    sd:'투자등급 회사채, 품질 지키며 물러섬',     life:'이길 자리 아니야, 물러서',             love:'자존심 세우지 말고 먼저 사과해'},
+  {n:55,en:'Six of Swords',      ko:'소드 6',         stock:['EEM','BKNG'],   sd:'신흥국, 새 장소로의 이동과 전환',         life:'떠나, 이 자리는 끝났어',               love:'지난 사랑에서 벗어나, 더 나은 사랑 온다'},
+  {n:56,en:'Seven of Swords',    ko:'소드 7',         stock:['ACWX','NFLX'],  sd:'미국 제외 전세계, 은밀한 다각화 전략',    life:'정면 말고 우회해, 영리하게',           love:'숨기는 거 있어, 소통으로 풀어'},
+  {n:57,en:'Eight of Swords',    ko:'소드 8',         stock:['SHV','V'],      sd:'초단기국채, 움직이지 않고 잠근 상태',     life:'스스로 묶지 마, 풀려있어',             love:'스스로 문 닫지 마, 상대는 기다린다'},
+  {n:58,en:'Nine of Swords',     ko:'소드 9',         stock:['SHV','CRWD'],   sd:'초단기국채, 심리적 안식처·피난',          life:'걱정의 90%는 안 일어나',               love:'혼자 고민하지 마, 상대도 같은 마음이야'},
+  {n:59,en:'Ten of Swords',      ko:'소드 10',        stock:['VCIT','INTC'],  sd:'중기 회사채, 끝에서 안정 추구',           life:'바닥 찍었어, 이제 올라간다',           love:'끝이 보여, 깔끔하게 마무리해'},
+  {n:60,en:'Page of Swords',     ko:'소드 페이지',    stock:['ROBO','PLTR'],  sd:'로봇·AI, 새로운 정보·기술의 호기심',      life:'더 알아봐, 정보가 무기야',             love:'상대를 더 관찰해, 조금만 말해'},
+  {n:61,en:'Knight of Swords',   ko:'소드 나이트',    stock:['SPMO','ORCL'],  sd:'S&P500 모멘텀, 공격적 추세',              life:'들이받아, 속도가 답이야',              love:'고백 당장 해, 능동적으로'},
+  {n:62,en:'Queen of Swords',    ko:'소드 퀸',        stock:['QUAL','MA'],    sd:'퀄리티, 지적·분석적 접근',                life:'감정 빼고 논리로 봐',                  love:'감정이 판단을 흐리게 두지 마'},
+  {n:63,en:'King of Swords',     ko:'소드 킹',        stock:['OEF','GS'],     sd:'S&P100·골드만, 시장의 권위있는 대형주',   life:'단호하게 잘라, 명확히 말해',           love:'확실하게 말해, 애매하게 두지 마'},
+  {n:64,en:'Ace of Pentacles',   ko:'펜타클 에이스',  stock:['GLD','NEM'],    sd:'금, 본질적 가치 저장의 씨앗',             life:'기회 들어왔어, 손 뻗어',               love:'장기적 인연의 시작, 신중히 키워'},
+  {n:65,en:'Two of Pentacles',   ko:'펜타클 2',       stock:['VTV','BRK.B'],  sd:'가치주, 균형·안정의 저글링',              life:'균형 잡아, 한쪽으로 쏠지 마',          love:'일·연애 균형 맞춰, 한쪽 편중되면 깨져'},
+  {n:66,en:'Three of Pentacles', ko:'펜타클 3',       stock:['PAVE','CAT'],   sd:'인프라 건설, 장인·협업의 정신',           life:'혼자 말고 협업해, 함께가 빨라',        love:'둘이 함께 만들어가는 관계, 협력해'},
+  {n:67,en:'Four of Pentacles',  ko:'펜타클 4',       stock:['SHY','MS'],     sd:'단기국채, 안전하게 꼭 쥐기',              life:'쥐고 있어, 지금은 지킬 때',            love:'소유욕 내려놔, 상대 숨 막혀'},
+  {n:68,en:'Five of Pentacles',  ko:'펜타클 5',       stock:['SCHD','KO'],    sd:'배당성장, 어려워도 꾸준한 현금흐름',      life:'도움 청해, 자존심 내려놔',             love:'경제·현실적 고민 상대와 나눠'},
+  {n:69,en:'Six of Pentacles',   ko:'펜타클 6',       stock:['MUB','MCD'],    sd:'지방채, 공공성·사회환원의 나눔',          life:'나눠, 줄수록 돌아온다',                love:'먼저 다가가서, 다정하게 대해봐'},
+  {n:70,en:'Seven of Pentacles', ko:'펜타클 7',       stock:['DGRO','ABBV'],  sd:'배당성장, 수확을 기다리는 인내',          life:'기다려, 수확은 곧이야',                love:'지금은 결실 안 맺어, 더 기다려'},
+  {n:71,en:'Eight of Pentacles', ko:'펜타클 8',       stock:['XSD','AVGO'],   sd:'반도체 동일가중, 정밀한 장인 정신',       life:'디테일 갈아, 장인처럼 정밀하게',       love:'정성으로 대해, 디테일이 마음 여는 열쇠'},
+  {n:72,en:'Nine of Pentacles',  ko:'펜타클 9',       stock:['DVY','HD'],     sd:'고배당, 자립적 인컴의 풍요',              life:'너 혼자서도 충분해, 자립해',           love:'너 자신도 충분해, 급하게 만나지 마'},
+  {n:73,en:'Ten of Pentacles',   ko:'펜타클 10',      stock:['KBE','BLK'],    sd:'은행, 부의 대물림과 유산',                life:'유산·기반 챙겨, 길게 봐',              love:'결혼까지 이어질 인연, 가족도 인정해'},
+  {n:74,en:'Page of Pentacles',  ko:'펜타클 페이지',  stock:['XLB','LIN'],    sd:'소재, 끝없는 기초 자원의 성실',           life:'꾸준히 배워, 기초가 무기야',           love:'상대 알아가는 중, 조급하게 굴지 마'},
+  {n:75,en:'Knight of Pentacles',ko:'펜타클 나이트',  stock:['DBA','UPS'],    sd:'농산물, 느리고 꾸준한 근면함',            life:'느려도 멈추지 마, 끝까지 간다',        love:'느려도 진심, 포기하지 마'},
+  {n:76,en:'Queen of Pentacles', ko:'펜타클 퀸',      stock:['VNQ','EQIX'],   sd:'미국 리츠, 실물 자산의 풍요와 돌봄',      life:'주위에 베풀어, 그게 풍요야',           love:'따뜻하게 품어주는 사랑'},
+  {n:77,en:'King of Pentacles',  ko:'펜타클 킹',      stock:['XLF','BAC'],    sd:'금융, 부와 권위의 왕',                    life:'정상까지 가, 부와 권위 둘 다',         love:'경제·마음 다 주는 사랑, 평생처럼 편안해'},
+];
+
+/* ── 휠: 1~78 숫자 칸 ── */
+// 78칸 숫자를 셔플해서 배치
+const WHEEL_NUMS = (()=>{
+  const arr = Array.from({length:78},(_,i)=>i+1);
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+  return arr;
+})();
+const N_SEGS = 78;
+const dA = Math.PI * 2 / N_SEGS;
+
+// 칸 색: 숫자별로 미묘하게 다른 색 레이어
+function segColor(idx){
+  const hues=[220,250,200,270,180,240];
+  const h=hues[idx%hues.length];
+  const l=8+Math.sin(idx*0.7)*3;
+  return {
+    bg:`hsl(${h},30%,${l}%)`,
+    mid:`hsl(${h},40%,${l+5}%)`,
+    line:`hsla(${h},60%,70%,0.35)`,
+    num:`hsla(${h},80%,88%,0.95)`
+  };
+}
+
+const wCvs=document.getElementById('wheel-canvas'), wCtx=wCvs.getContext('2d');
+let CX=0, CY=0, WR=0, IR=0, rot=0, vel=0, spinning=false, stopF=0, showLbl=true;
+
+function setupWheel(){
+  const outer=document.getElementById('wheel-outer');
+  const W=Math.min(outer.clientWidth||340, 460);
+  const H=Math.round(W*0.58);
+  wCvs.width=W; wCvs.height=H;
+  CX=W/2; CY=H;
+  WR=Math.min(W*0.47, H*0.97);
+  IR=WR*0.30;
+
+  // 버튼: wheel-wrap 기준 CX, CY 위치
+  // 캔버스가 flex center이므로 캔버스 offsetLeft 더해야 함
+  const btn=document.getElementById('spin-btn');
+  const canvasLeft = wCvs.offsetLeft;
+  btn.style.left = (canvasLeft + CX) + 'px';
+  btn.style.top  = CY + 'px';
+  drawWheel();
+}
+
+function drawWheel(){
+  if(!WR||WR<=0) return;
+  const SR=WR*0.95;
+  wCtx.clearRect(0,0,wCvs.width,wCvs.height);
+  wCtx.save(); wCtx.translate(CX,CY); wCtx.rotate(rot);
+
+  for(let i=0;i<N_SEGS;i++){
+    const a0=i*dA-Math.PI/2, a1=a0+dA, am=a0+dA/2;
+    const zc=segColor(i);
+
+    // 칸 채우기
+    const g=wCtx.createRadialGradient(0,0,IR,0,0,SR);
+    g.addColorStop(0, zc.mid);
+    g.addColorStop(0.7, zc.bg);
+    g.addColorStop(1, 'rgba(1,2,6,0.95)');
+    wCtx.beginPath(); wCtx.arc(0,0,SR,a0,a1); wCtx.arc(0,0,IR,a1,a0,true); wCtx.closePath();
+    wCtx.fillStyle=g; wCtx.fill();
+
+    // 분할선
+    wCtx.beginPath();
+    wCtx.moveTo(Math.cos(a0)*IR, Math.sin(a0)*IR);
+    wCtx.lineTo(Math.cos(a0)*SR, Math.sin(a0)*SR);
+    wCtx.strokeStyle='rgba(255,255,255,0.08)'; wCtx.lineWidth=0.5; wCtx.stroke();
+
+    // 숫자
+    if(showLbl){
+      const numR=(IR+SR)*0.55;
+      wCtx.save();
+      wCtx.rotate(am);
+      wCtx.translate(numR,0);
+      wCtx.rotate(Math.PI/2);
+      wCtx.textAlign='center'; wCtx.textBaseline='middle';
+      const fs=Math.max(WR*0.028, 7);
+      wCtx.font=`bold ${fs}px 'Nanum Gothic',sans-serif`;
+      wCtx.fillStyle=zc.num;
+      wCtx.shadowColor=zc.num; wCtx.shadowBlur=4;
+      wCtx.fillText(String(WHEEL_NUMS[i]), 0, 0);
+      wCtx.restore();
+    }
+  }
+
+  // 내부 허브
+  const hg=wCtx.createRadialGradient(-IR*.1,-IR*.1,0,0,0,IR);
+  hg.addColorStop(0,'#1c1c2e'); hg.addColorStop(0.5,'#0e0e1a'); hg.addColorStop(1,'#050508');
+  wCtx.beginPath(); wCtx.arc(0,0,IR,0,Math.PI*2);
+  wCtx.fillStyle=hg; wCtx.fill();
+  wCtx.strokeStyle='rgba(240,192,64,0.8)'; wCtx.lineWidth=WR*0.012; wCtx.stroke();
+  // 허브 장식
+  for(let r=0;r<12;r++){
+    const a=r/12*Math.PI*2;
+    wCtx.beginPath(); wCtx.moveTo(Math.cos(a)*IR*.2,Math.sin(a)*IR*.2); wCtx.lineTo(Math.cos(a)*IR*.8,Math.sin(a)*IR*.8);
+    wCtx.strokeStyle=`rgba(240,192,64,${r%2?0.08:0.2})`; wCtx.lineWidth=0.8; wCtx.stroke();
+  }
+
+  wCtx.restore();
+
+  // 외곽 림
+  wCtx.save(); wCtx.translate(CX,CY);
+  const rw=WR*0.04;
+  wCtx.beginPath(); wCtx.arc(0,0,WR*0.96,0,Math.PI*2);
+  wCtx.strokeStyle='rgba(240,192,64,0.7)'; wCtx.lineWidth=rw*0.3; wCtx.stroke();
+  wCtx.beginPath(); wCtx.arc(0,0,WR+rw*.2,0,Math.PI*2);
+  wCtx.strokeStyle='rgba(240,192,64,0.4)'; wCtx.lineWidth=rw*0.15; wCtx.stroke();
+
+  // 포인터 ▲
+  wCtx.beginPath(); wCtx.moveTo(-9,-WR*.95); wCtx.lineTo(9,-WR*.95); wCtx.lineTo(0,-WR*1.11); wCtx.closePath();
+  wCtx.fillStyle='#f0c040'; wCtx.shadowColor='rgba(240,192,64,0.9)'; wCtx.shadowBlur=12; wCtx.fill();
+  wCtx.restore();
+}
+
+function loop(){
+  if(WR>0){
+    if(spinning){ rot+=vel; }
+    else if(stopF>0){ vel*=0.87; rot+=vel; stopF--; if(stopF===0){showLbl=true; processWin();} }
+    drawWheel();
+  }
+  requestAnimationFrame(loop);
+}
+
+let currentMode='life';
+
+function processWin(){
+  const adj=((-rot%(Math.PI*2))+200*Math.PI)%(Math.PI*2);
+  const idx=Math.floor(adj/dA)%N_SEGS;
+  const num=WHEEL_NUMS[idx]; // 1~78
+  const btn=document.getElementById('spin-btn');
+  btn.disabled=false; btn.textContent='SPIN'; btn.classList.remove('spinning');
+  document.getElementById('wheel-toast').textContent=`✦ No.${num} ✦`;
+  const card=TAROT[num-1]; // 1-based → 0-based index
+  const rev=Math.random()<0.27;
+  setTimeout(()=>showResult(card,rev),700);
+}
+
+function showResult(card,rev){
+  const wrap=document.getElementById('result-card-wrap');
+  wrap.innerHTML=''; wrap.className='result-card-wrap'+(rev?' reversed':'');
+  const img=new Image();
+  img.onload=function(){
+    img.className='card-img';
+    if(rev) img.style.transform='rotate(180deg)';
+    wrap.appendChild(img);
+    if(rev){const t=document.createElement('div');t.className='rev-tag';t.textContent='역방향';wrap.appendChild(t);}
+  };
+  img.onerror=function(){
+    const syms=['♠','♥','♦','♣','⭐','☽','✦'];
+    const ph=document.createElement('div'); ph.className='card-placeholder';
+    ph.innerHTML=`<div class="placeholder-sym">${syms[card.n%7]}</div><div class="placeholder-nm">${card.en}<br>${card.ko}</div>`;
+    if(rev){const t=document.createElement('div');t.className='rev-tag';t.textContent='역방향';ph.appendChild(t);}
+    wrap.appendChild(ph);
+  };
+  img.src=getImgPath(card.n);
+  document.getElementById('result-en').textContent=card.en+(rev?' (역방향)':'');
+  document.getElementById('result-ko').textContent=card.ko;
+  const lbl=document.getElementById('box-label'), cnt=document.getElementById('box-content');
+  if(currentMode==='stock'){
+    lbl.textContent='미국 주식 추천';
+    cnt.innerHTML=`<div class="stock-row">${card.stock.map(s=>`<span class="stock-tag">${s}</span>`).join('')}</div><div class="stock-desc">${card.sd}</div>`;
+  } else {
+    lbl.textContent=currentMode==='life'?'인생 조언':'연애 조언';
+    cnt.innerHTML=`<div class="box-text">${currentMode==='life'?card.life:card.love}</div>`;
+  }
+  showScreen('screen-result');
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('back-btn').className='back-btn'+(id!=='screen-mode'?' visible':'');
+}
+function selectMode(m){
+  currentMode=m;
+  const lb={stock:'📈 미국 주식 추천',life:'🔮 인생 조언',love:'🌙 연애 조언'};
+  document.getElementById('mode-badge').textContent=lb[m];
+  resetWheel(); showScreen('screen-wheel');
+  requestAnimationFrame(()=>requestAnimationFrame(setupWheel));
+}
+function resetWheel(){
+  rot=0; vel=0; spinning=false; stopF=0; showLbl=true;
+  const b=document.getElementById('spin-btn');
+  b.disabled=false; b.textContent='SPIN'; b.classList.remove('spinning');
+  document.getElementById('wheel-toast').textContent='';
+}
+function goToWheel(){ resetWheel(); showScreen('screen-wheel'); requestAnimationFrame(()=>requestAnimationFrame(setupWheel)); }
+function goBack(){ const a=document.querySelector('.screen.active'); if(a.id==='screen-wheel') showScreen('screen-mode'); else if(a.id==='screen-result') goToWheel(); }
+
+document.getElementById('spin-btn').addEventListener('click',function(){
+  if(stopF>0) return;
+  if(!spinning){
+    spinning=true; showLbl=false; vel=0.6+Math.random()*0.5;
+    this.textContent='STOP'; this.classList.add('spinning');
+    document.getElementById('wheel-toast').textContent='';
+    if(navigator.vibrate) navigator.vibrate(80);
+  } else {
+    spinning=false; stopF=32; this.disabled=true; this.textContent='···';
+    if(navigator.vibrate) navigator.vibrate(40);
+  }
+});
+window.addEventListener('resize',()=>{ if(document.getElementById('screen-wheel').classList.contains('active')) setupWheel(); });
+loop();
+</script>
+</body>
+</html>
