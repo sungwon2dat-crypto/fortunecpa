@@ -194,7 +194,7 @@
       </div>
       <div id="rankMsg"></div>
     </div>
-    <div id="rankTableWrap" style="margin-top:14px;display:none;max-height:200px;overflow-y:auto;">
+    <div id="rankTableWrap" style="margin-top:14px;display:none;max-height:320px;overflow-y:auto;">
       <div style="font-size:0.6rem;letter-spacing:2px;color:rgba(0,245,255,0.5);margin-bottom:8px;text-align:center;">— TOP 10 —</div>
       <div id="rankTableContent"></div>
     </div>
@@ -219,7 +219,7 @@ async function submitScore(nickname, scoreVal) {
       + '&nickname=' + encodeURIComponent(nickname)
       + '&score='    + encodeURIComponent(scoreVal)
       + '&wave='     + encodeURIComponent(typeof wave !== 'undefined' ? wave : '');
-    await fetch(url);
+    await fetch(url, { method: 'GET', mode: 'no-cors' });
     return { ok: true };
   } catch (e) {
     console.warn('submitScore error:', e);
