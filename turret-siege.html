@@ -219,7 +219,7 @@ async function submitScore(nickname, scoreVal) {
       + '&nickname=' + encodeURIComponent(nickname)
       + '&score='    + encodeURIComponent(scoreVal)
       + '&wave='     + encodeURIComponent(typeof wave !== 'undefined' ? wave : '');
-    await fetch(url, { method: 'GET', mode: 'no-cors' });
+    await fetch(url);
     return { ok: true };
   } catch (e) {
     console.warn('submitScore error:', e);
