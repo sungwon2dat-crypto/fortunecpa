@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>주식 현황판 | 점쟁이회계사</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0e1a;--card:#111827;--border:#1e2d45;
+  --text:#e2e8f0;--muted:#64748b;--accent:#3b82f6;
+  --up:#22c55e;--dn:#ef4444;--neutral:#94a3b8;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;min-height:100vh;}
+
+/* ── 헤더 ── */
+.site-header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(10,14,26,0.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:14px 20px;display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:12px;
+}
+.logo{font-family:'Nanum Gothic',sans-serif;font-weight:800;font-size:15px;color:#c8a86e;letter-spacing:1px;text-decoration:none;}
+.header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.back-link{font-size:11px;color:var(--muted);text-decoration:none;letter-spacing:1px;transition:color 0.2s;}
+.back-link:hover{color:var(--text);}
+
+/* 기간 선택 */
+.period-tabs{display:flex;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:3px;}
+.period-btn{
+  padding:5px 12px;border:none;background:none;color:var(--muted);
+  font-family:'Nanum Gothic',sans-serif;font-size:12px;font-weight:700;
+  border-radius:6px;cursor:pointer;transition:all 0.15s;
+}
+.period-btn.active{background:var(--accent);color:#fff;}
+.period-btn:hover:not(.active){background:var(--border);color:var(--text);}
+
+/* 갱신 */
+.refresh-btn{
+  padding:6px 14px;background:none;border:1px solid var(--border);
+  color:var(--muted);font-size:11px;border-radius:6px;cursor:pointer;
+  transition:all 0.2s;white-space:nowrap;
+}
+.refresh-btn:hover{border-color:var(--accent);color:var(--accent);}
+.last-update{font-size:10px;color:var(--muted);white-space:nowrap;}
+
+/* ── 메인 ── */
+.main{padding:20px;max-width:1600px;margin:0 auto;}
+
+/* 글로벌 로딩 */
+#global-loading{
+  text-align:center;padding:80px 20px;
+  font-size:14px;color:var(--muted);letter-spacing:1px;
+}
+.spinner{
+  display:inline-block;width:32px;height:32px;
+  border:3px solid var(--border);border-top-color:var(--accent);
+  border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:16px;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── 매크로 섹션 ── */
+.macro-section{margin-bottom:24px;}
+.macro-grid{display:grid;gap:14px;}
+.macro-grid.col1{grid-template-columns:1fr;}
+
+/* 매크로 카드 = 섹터 카드와 동일 구조, 더 큰 차트 */
+.macro-card{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;transition:border-color 0.2s;
+}
+.macro-card:hover{border-color:#2d3f5e;}
+.macro-card-header{
+  padding:12px 16px 8px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+}
+.macro-card-title{font-family:'Nanum Gothic',sans-serif;font-weight:800;font-size:13px;color:var(--text);}
+.macro-card-meta{font-size:10px;color:var(--muted);}
+.macro-card-legend{
+  padding:8px 16px;display:flex;flex-wrap:wrap;gap:6px;
+  border-bottom:1px solid var(--border);
+}
+.macro-legend-item{display:flex;align-items:center;gap:5px;}
+.macro-legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.macro-legend-sym{font-size:11px;font-weight:700;color:var(--text);}
+.macro-legend-chg{font-size:10px;font-weight:700;}
+.macro-legend-chg.up{color:var(--up);}
+.macro-legend-chg.dn{color:var(--dn);}
+.macro-legend-chg.neu{color:var(--neutral);}
+.macro-card-chart{padding:8px 12px 12px;position:relative;}
+.macro-chart-canvas{display:block;width:100%;height:220px;}
+.macro-base-label{position:absolute;right:14px;top:10px;font-size:9px;color:var(--muted);letter-spacing:1px;}
+.macro-loading-text{padding:40px;text-align:center;font-size:11px;color:var(--muted);}
+
+/* 섹션 구분선 */
+.section-divider{border:none;border-top:1px solid var(--border);margin:28px 0 20px;}
+.section-heading{
+  font-family:'Nanum Gothic',sans-serif;font-weight:800;
+  font-size:13px;color:var(--text);letter-spacing:1px;
+  margin-bottom:16px;display:flex;align-items:center;gap:8px;
+}
+.section-heading::after{content:'';flex:1;height:1px;background:var(--border);}
+.sector-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(340px, 1fr));
+  gap:16px;
+}
+
+/* ── 섹터 카드 ── */
+.sector-card{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;transition:border-color 0.2s;
+}
+.sector-card:hover{border-color:#2d3f5e;}
+
+.card-header{
+  padding:12px 16px 8px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+}
+.card-title{
+  font-family:'Nanum Gothic',sans-serif;font-weight:800;font-size:13px;color:var(--text);
+  letter-spacing:0.5px;
+}
+.card-meta{font-size:10px;color:var(--muted);}
+
+/* 종목 범례 */
+.card-legend{
+  padding:8px 16px;display:flex;flex-wrap:wrap;gap:6px;
+  border-bottom:1px solid var(--border);
+}
+.legend-item{display:flex;align-items:center;gap:5px;cursor:default;}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.legend-sym{font-size:11px;font-weight:700;color:var(--text);}
+.legend-chg{font-size:10px;font-weight:700;}
+.legend-chg.up{color:var(--up);}
+.legend-chg.dn{color:var(--dn);}
+.legend-chg.neu{color:var(--neutral);}
+
+/* 차트 영역 */
+.card-chart{padding:8px 12px 12px;position:relative;}
+.chart-canvas{display:block;width:100%;height:140px;}
+
+/* 로딩 오버레이 */
+.card-loading{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(17,24,39,0.7);font-size:11px;color:var(--muted);letter-spacing:1px;
+}
+.card-loading.hidden{display:none;}
+
+/* 에러 */
+.card-error{padding:20px;text-align:center;font-size:11px;color:var(--dn);}
+
+/* 기준선 라벨 */
+.base-label{
+  position:absolute;right:14px;top:10px;
+  font-size:9px;color:var(--muted);letter-spacing:1px;
+}
+
+/* ── 반응형 ── */
+@media(max-width:640px){
+  .sector-grid{grid-template-columns:1fr;}
+  .period-tabs{gap:2px;}
+  .period-btn{padding:4px 8px;font-size:11px;}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="logo" href="index.html">점쟁이회계사</a>
+  <div class="header-right">
+    <div class="period-tabs">
+      <button class="period-btn" data-d="5">5일</button>
+      <button class="period-btn active" data-d="30">30일</button>
+      <button class="period-btn" data-d="60">60일</button>
+      <button class="period-btn" data-d="100">100일</button>
+      <button class="period-btn" data-d="200">200일</button>
+    </div>
+    <button class="refresh-btn" onclick="loadAll()">↻ 새로고침</button>
+    <span class="last-update" id="last-update"></span>
+    <a class="back-link" href="index.html">← HOME</a>
+  </div>
+</header>
+
+<div class="main">
+  <div id="global-loading">
+    <div class="spinner"></div><br>데이터 불러오는 중...
+  </div>
+
+  <!-- ① 매크로 표 3개 -->
+  <div class="macro-section" id="macro-wrap" style="display:none;">
+    <div class="section-heading">📊 매크로 지수</div>
+    <div class="macro-grid col1" id="macro-macro"></div>
+
+    <div class="section-heading" style="margin-top:20px;">🌍 각국 증시</div>
+    <div class="macro-grid col1" id="macro-index"></div>
+
+    <div class="section-heading" style="margin-top:20px;">💱 달러 대비 환율</div>
+    <div class="macro-grid col1" id="macro-fx"></div>
+
+    <hr class="section-divider">
+    <div class="section-heading">🗂 섹터별 주가 흐름</div>
+  </div>
+
+  <div class="sector-grid" id="sector-grid" style="display:none;"></div>
+</div>
+
+<script>
+/* ════════════════════════════
+   설정
+════════════════════════════ */
+const API = 'https://script.google.com/macros/s/AKfycbyUsAyHHOwzdkwL3IZBG8xI-o9qCAU07pRMSyDQV5sww3ebNd7br97Ye0lYPAyquEmL/exec'; // 배포 후 교체
+
+const COLORS = ['#3b82f6','#f59e0b','#22c55e','#ef4444','#a855f7','#06b6d4','#f97316'];
+
+/* ── 매크로 그룹 (3카드씩) ── */
+const MACRO_GROUPS = [
+  { id:'macro-macro', title:'매크로 지수', items:[
+    { sym:'BTC-USD', label:'BTC' },
+    { sym:'QQQ',     label:'QQQ' },
+    { sym:'SOXX',    label:'SOXX' },
+    { sym:'SPY',     label:'SPY' },
+    { sym:'TLT',     label:'TLT' },
+    { sym:'GLD',     label:'GLD' },
+    { sym:'XLE',     label:'XLE' },
+  ]},
+  { id:'macro-index', title:'각국 증시', items:[
+    { sym:'^GSPC',     label:'S&P500' },
+    { sym:'^KS11',     label:'KOSPI' },
+    { sym:'000001.SS', label:'상해' },
+    { sym:'^BSESN',    label:'SENSEX' },
+    { sym:'^N225',     label:'닛케이' },
+    { sym:'^GDAXI',    label:'DAX' },
+  ]},
+  { id:'macro-fx', title:'달러 대비 환율', items:[
+    { sym:'USDKRW=X', label:'KRW' },
+    { sym:'USDCNY=X', label:'CNY' },
+    { sym:'USDINR=X', label:'INR' },
+    { sym:'USDJPY=X', label:'JPY' },
+    { sym:'USDEUR=X', label:'EUR' },
+    { sym:'DX-Y.NYB', label:'DXY' },
+  ]},
+];
+
+// 매크로 전체 심볼 목록 (히스토리 fetch용)
+const MACRO_SYMS = MACRO_GROUPS.flatMap(g => g.items.map(i => i.sym));
+
+const SECTORS = [
+  { name:'AI 칩', syms:['NVDA','AMD','AVGO','ARM','MRVL'] },
+  { name:'빅테크 플랫폼', syms:['AAPL','MSFT','GOOGL','META'] },
+  { name:'이커머스·클라우드', syms:['AMZN','SHOP','MELI'] },
+  { name:'반도체 장비', syms:['ASML','AMAT','KLAC','LRCX'] },
+  { name:'메모리·스토리지', syms:['MU','WDC','STX'] },
+  { name:'소프트웨어 SaaS', syms:['CRM','ADBE','NOW','INTU','WDAY'] },
+  { name:'사이버보안', syms:['CRWD','PANW','FTNT','ZS'] },
+  { name:'핀테크·결제', syms:['V','MA','PYPL','SQ','COIN'] },
+  { name:'전통 금융', syms:['JPM','BAC','GS','BRK-B'] },
+  { name:'보험·자산운용', syms:['BLK','SCHW','AXP','CB'] },
+  { name:'헬스케어 빅파마', syms:['LLY','JNJ','ABBV','MRK','PFE'] },
+  { name:'의료기기·서비스', syms:['UNH','ABT','MDT','SYK'] },
+  { name:'전기차·배터리', syms:['TSLA','RIVN','ON'] },
+  { name:'전통차·모빌리티', syms:['GM','F','TM','UBER','LYFT'] },
+  { name:'에너지', syms:['XOM','CVX','COP','SLB'] },
+  { name:'클린에너지', syms:['NEE','ENPH','FSLR','CEG'] },
+  { name:'리테일·소비재', syms:['WMT','COST','TGT','HD','LOW'] },
+  { name:'엔터·미디어·스트리밍', syms:['NFLX','DIS','SPOT','RBLX'] },
+  { name:'항공우주·방산', syms:['LMT','RTX','NOC','GE','BA'] },
+  { name:'인프라·산업재', syms:['CAT','DE','UPS','FDX'] },
+];
+
+let currentPeriod = 30;
+let priceCache = {}; // sym -> [{d,c}]
+
+/* ════════════════════════════
+   초기화
+════════════════════════════ */
+document.querySelectorAll('.period-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentPeriod = parseInt(btn.dataset.d);
+    priceCache = {};
+    loadAll();
+  });
+});
+
+/* ════════════════════════════
+   전체 로드
+════════════════════════════ */
+async function loadAll() {
+  document.getElementById('global-loading').style.display = 'block';
+  document.getElementById('macro-wrap').style.display = 'none';
+  document.getElementById('sector-grid').style.display = 'none';
+
+  // 매크로 + 섹터 종목 한꺼번에 수집
+  const sectorSyms = [...new Set(SECTORS.flatMap(s => s.syms))];
+  const allSyms = [...new Set([...MACRO_SYMS, ...sectorSyms])];
+
+  const BATCH = 25;
+  for(let i = 0; i < allSyms.length; i += BATCH){
+    await fetchBatch(allSyms.slice(i, i + BATCH));
+  }
+
+  renderMacroSection();
+  renderGrid();
+
+  document.getElementById('global-loading').style.display = 'none';
+  document.getElementById('macro-wrap').style.display = 'block';
+  document.getElementById('sector-grid').style.display = 'grid';
+  document.getElementById('last-update').textContent =
+    '업데이트: ' + new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'});
+}
+
+/* ════════════════════════════
+   매크로 섹션 렌더 (라인차트)
+════════════════════════════ */
+function renderMacroSection(){
+  MACRO_GROUPS.forEach(group => {
+    const el = document.getElementById(group.id);
+    if(!el) return;
+    el.innerHTML = '';
+    el.appendChild(makeMacroCard(group.title, group.items));
+  });
+}
+
+function makeMacroCard(groupTitle, items){
+  const card = document.createElement('div');
+  card.className = 'macro-card';
+
+  // 헤더
+  const hdr = document.createElement('div');
+  hdr.className = 'macro-card-header';
+  hdr.innerHTML = `
+    <span class="macro-card-title">${items.map(i=>i.label).join(' vs ')}</span>
+    <span class="macro-card-meta">${currentPeriod}일 · 기준=100</span>`;
+  card.appendChild(hdr);
+
+  // 정규화 데이터
+  const normalizedData = {};
+  items.forEach(item => {
+    const raw = priceCache[item.sym];
+    if(!raw || raw.length < 2) return;
+    const base = raw[0].c;
+    if(!base) return;
+    normalizedData[item.sym] = raw.map(p => ({ d: p.d, v: Math.round(p.c / base * 10000) / 100 }));
+  });
+
+  // 범례
+  const legend = document.createElement('div');
+  legend.className = 'macro-card-legend';
+  items.forEach((item, i) => {
+    const nd = normalizedData[item.sym];
+    const last = nd && nd.length > 0 ? nd[nd.length-1].v : null;
+    const chg = last ? (last - 100).toFixed(1) : null;
+    const cls = chg === null ? 'neu' : parseFloat(chg) > 0 ? 'up' : parseFloat(chg) < 0 ? 'dn' : 'neu';
+    const chgStr = chg === null ? '-' : (parseFloat(chg) > 0 ? '+' : '') + chg + '%';
+    legend.innerHTML += `
+      <div class="macro-legend-item">
+        <div class="macro-legend-dot" style="background:${COLORS[i]}"></div>
+        <span class="macro-legend-sym">${item.label}</span>
+        <span class="macro-legend-chg ${cls}">${chgStr}</span>
+      </div>`;
+  });
+  card.appendChild(legend);
+
+  // 차트
+  const chartWrap = document.createElement('div');
+  chartWrap.className = 'macro-card-chart';
+  chartWrap.innerHTML = '<span class="macro-base-label">기준=100</span>';
+  const canvas = document.createElement('canvas');
+  canvas.className = 'macro-chart-canvas';
+  chartWrap.appendChild(canvas);
+  card.appendChild(chartWrap);
+
+  requestAnimationFrame(() => {
+    drawMacroChart(canvas, items.map(i=>i.sym), normalizedData);
+  });
+
+  return card;
+}
+
+
+async function fetchBatch(syms) {
+  if(API === 'YOUR_APPS_SCRIPT_URL') {
+    // 데모 데이터 (API 미설정 시)
+    syms.forEach(sym => {
+      if(!priceCache[sym]) priceCache[sym] = makeDemoData(currentPeriod);
+    });
+    return;
+  }
+  try {
+    const url = API + '?symbols=' + syms.join(',') + '&period=' + currentPeriod;
+    const res = await fetch(url);
+    const json = await res.json();
+    if(json.ok && json.data) {
+      Object.entries(json.data).forEach(([sym, prices]) => {
+        priceCache[sym] = prices;
+      });
+    }
+  } catch(e) {
+    console.warn('fetch error', e);
+  }
+}
+
+/* ════════════════════════════
+   데모 데이터 (API 미연결 시)
+════════════════════════════ */
+function makeDemoData(n) {
+  const data = [];
+  let price = 100 + Math.random() * 200;
+  const now = new Date();
+  for(let i = n; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    if(d.getDay() === 0 || d.getDay() === 6) continue;
+    price *= (1 + (Math.random() - 0.48) * 0.025);
+    data.push({ d: d.toISOString().slice(0,10), c: Math.round(price * 100)/100 });
+  }
+  return data;
+}
+
+/* ════════════════════════════
+   그리드 렌더
+════════════════════════════ */
+function renderGrid() {
+  const grid = document.getElementById('sector-grid');
+  grid.innerHTML = '';
+  SECTORS.forEach(sector => {
+    grid.appendChild(makeSectorCard(sector));
+  });
+}
+
+function makeSectorCard(sector) {
+  const card = document.createElement('div');
+  card.className = 'sector-card';
+
+  // 헤더
+  const hdr = document.createElement('div');
+  hdr.className = 'card-header';
+  hdr.innerHTML = `
+    <span class="card-title">${sector.name}</span>
+    <span class="card-meta">${sector.syms.length}종목 · ${currentPeriod}일</span>
+  `;
+  card.appendChild(hdr);
+
+  // 시작점 100 정규화된 데이터 준비
+  const normalizedData = {}; // sym -> [{d, v}]
+  sector.syms.forEach(sym => {
+    const raw = priceCache[sym];
+    if(!raw || raw.length < 2) return;
+    const base = raw[0].c;
+    if(!base) return;
+    normalizedData[sym] = raw.map(p => ({ d: p.d, v: Math.round(p.c / base * 10000) / 100 }));
+  });
+
+  // 범례 (최종 등락률 표시)
+  const legend = document.createElement('div');
+  legend.className = 'card-legend';
+  sector.syms.forEach((sym, i) => {
+    const nd = normalizedData[sym];
+    const last = nd && nd.length > 0 ? nd[nd.length - 1].v : null;
+    const chg = last ? (last - 100).toFixed(1) : null;
+    const cls = chg === null ? 'neu' : parseFloat(chg) > 0 ? 'up' : parseFloat(chg) < 0 ? 'dn' : 'neu';
+    const chgStr = chg === null ? '-' : (parseFloat(chg) > 0 ? '+' : '') + chg + '%';
+    legend.innerHTML += `
+      <div class="legend-item">
+        <div class="legend-dot" style="background:${COLORS[i % COLORS.length]}"></div>
+        <span class="legend-sym">${sym}</span>
+        <span class="legend-chg ${cls}">${chgStr}</span>
+      </div>`;
+  });
+  card.appendChild(legend);
+
+  // 차트
+  const chartWrap = document.createElement('div');
+  chartWrap.className = 'card-chart';
+  chartWrap.innerHTML = '<span class="base-label">기준=100</span>';
+
+  const canvas = document.createElement('canvas');
+  canvas.className = 'chart-canvas';
+  chartWrap.appendChild(canvas);
+  card.appendChild(chartWrap);
+
+  // canvas 실제 크기는 렌더 후 설정
+  requestAnimationFrame(() => {
+    drawChart(canvas, sector.syms, normalizedData);
+  });
+
+  return card;
+}
+
+/* ════════════════════════════
+   차트 드로우 (순수 Canvas)
+════════════════════════════ */
+function drawLineChart(canvas, syms, normalizedData, opts){
+  const dpr = window.devicePixelRatio || 1;
+  const W   = canvas.offsetWidth || 320;
+  const H   = opts.H || 140;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const labelMap = opts.labelMap || {};
+  const maxLabelLen = Math.max(...syms.map(s => (labelMap[s]||s).length), 3);
+  const PAD = { t:10, r: maxLabelLen * 7 + 8, b:22, l:34 };
+  const cW = W - PAD.l - PAD.r;
+  const cH = H - PAD.t - PAD.b;
+
+  let minV = Infinity, maxV = -Infinity;
+  syms.forEach(sym => {
+    const nd = normalizedData[sym];
+    if(!nd) return;
+    nd.forEach(p => { minV = Math.min(minV, p.v); maxV = Math.max(maxV, p.v); });
+  });
+  if(!isFinite(minV)){ minV = 95; maxV = 105; }
+  const range = maxV - minV || 10;
+  minV -= range * 0.08;
+  maxV += range * 0.08;
+
+  ctx.fillStyle = '#111827';
+  ctx.fillRect(0, 0, W, H);
+
+  // 그리드 + y축 (흰색)
+  const step = range > 40 ? 20 : range > 20 ? 10 : range > 10 ? 5 : 2;
+  for(let v = Math.ceil(minV/step)*step; v <= maxV; v += step){
+    const y = PAD.t + cH - ((v-minV)/(maxV-minV))*cH;
+    const is100 = Math.abs(v-100) < 0.5;
+    ctx.strokeStyle = is100 ? 'rgba(180,200,220,0.45)' : 'rgba(40,60,90,0.7)';
+    ctx.lineWidth   = is100 ? 1 : 0.5;
+    ctx.setLineDash(is100 ? [4,4] : []);
+    ctx.beginPath(); ctx.moveTo(PAD.l, y); ctx.lineTo(PAD.l+cW, y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = is100 ? 'rgba(255,255,255,0.9)' : 'rgba(200,215,230,0.6)';
+    ctx.font = `${is100?9:8}px monospace`;
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillText(v.toFixed(0), PAD.l-4, y);
+  }
+
+  // 종목별 곡선 (Catmull-Rom) + 우측 티커
+  const labelYs = [];
+  syms.forEach((sym, i) => {
+    const nd = normalizedData[sym];
+    if(!nd || nd.length < 2) return;
+    const color = COLORS[i % COLORS.length];
+    const N = nd.length;
+    const pts = nd.map((p, j) => ({
+      x: PAD.l + (j/(N-1))*cW,
+      y: PAD.t + cH - ((p.v-minV)/(maxV-minV))*cH,
+    }));
+
+    ctx.strokeStyle = color; ctx.lineWidth = 1.8;
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for(let j = 0; j < pts.length-1; j++){
+      const p0 = pts[Math.max(j-1,0)];
+      const p1 = pts[j];
+      const p2 = pts[j+1];
+      const p3 = pts[Math.min(j+2, pts.length-1)];
+      const t = 0.4;
+      ctx.bezierCurveTo(
+        p1.x + (p2.x-p0.x)*t/2, p1.y + (p2.y-p0.y)*t/2,
+        p2.x - (p3.x-p1.x)*t/2, p2.y - (p3.y-p1.y)*t/2,
+        p2.x, p2.y
+      );
+    }
+    ctx.stroke();
+
+    const lp = pts[pts.length-1];
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(lp.x, lp.y, 2.5, 0, Math.PI*2); ctx.fill();
+
+    // 우측 티커 라벨 (겹침 방지)
+    const label = labelMap[sym] || sym;
+    let ly = lp.y;
+    for(const prev of labelYs){ if(Math.abs(ly-prev)<11) ly = prev + (ly>=prev?11:-11); }
+    labelYs.push(ly);
+    ctx.strokeStyle = color; ctx.lineWidth = 0.7; ctx.setLineDash([2,2]);
+    ctx.beginPath(); ctx.moveTo(lp.x+3, lp.y); ctx.lineTo(PAD.l+cW+4, ly); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = color;
+    ctx.font = `bold 9px 'Nanum Gothic',monospace`;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(label, PAD.l+cW+6, ly);
+  });
+
+  // x축 날짜 (흰색)
+  const allDates = [];
+  for(const sym of syms){ const nd = normalizedData[sym]; if(nd?.length){ nd.forEach(p=>allDates.push(p.d)); break; } }
+  if(allDates.length > 0){
+    const idxs = [0, Math.floor((allDates.length-1)/2), allDates.length-1];
+    ctx.fillStyle = 'rgba(200,215,230,0.8)'; ctx.font = '8px monospace'; ctx.textBaseline = 'top';
+    idxs.forEach(idx => {
+      const x = PAD.l + (idx/(allDates.length-1))*cW;
+      ctx.textAlign = idx===0?'left':idx===allDates.length-1?'right':'center';
+      ctx.fillText(allDates[idx]?.slice(5)||'', x, H-PAD.b+3);
+    });
+  }
+}
+
+function drawChart(canvas, syms, normalizedData){
+  const labelMap = {}; syms.forEach(s => labelMap[s] = s);
+  drawLineChart(canvas, syms, normalizedData, { H:140, labelMap });
+}
+
+function drawMacroChart(canvas, syms, normalizedData){
+  const labelMap = {};
+  MACRO_GROUPS.forEach(g => g.items.forEach(it => { labelMap[it.sym] = it.label; }));
+  syms.forEach(s => { if(!labelMap[s]) labelMap[s] = s; });
+  drawLineChart(canvas, syms, normalizedData, { H:220, labelMap });
+}
+
+/* ════════════════════════════
+   시작
+════════════════════════════ */
+window.addEventListener('load', loadAll);
+window.addEventListener('resize', () => {
+  // 리사이즈 시 차트 재드로우
+  document.querySelectorAll('.chart-canvas').forEach((canvas, i) => {
+    const sector = SECTORS[i];
+    if(!sector) return;
+    const normalizedData = {};
+    sector.syms.forEach(sym => {
+      const raw = priceCache[sym];
+      if(!raw || raw.length < 2) return;
+      const base = raw[0].c;
+      normalizedData[sym] = raw.map(p => ({ d: p.d, v: Math.round(p.c / base * 10000) / 100 }));
+    });
+    drawChart(canvas, sector.syms, normalizedData);
+  });
+});
+</script>
+</body>
+</html>
