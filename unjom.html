@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>운좀봐</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFF5E1;--card:#FFE4B5;--text:#5C4033;--accent:#FF8C42;--green:#7BC67A;--red:#E05A5A;
+  --coin:#FFD700;--stage-bar:#FFDAB9;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;height:100%;background:#e8d5b0;font-family:'Noto Sans KR',sans-serif;overflow:hidden;touch-action:none;}
+
+/* ── 래퍼 ── */
+#wrap{
+  position:relative;width:100%;max-width:480px;height:100svh;
+  margin:0 auto;background:var(--bg);overflow:hidden;
+  box-shadow:0 0 40px rgba(0,0,0,0.15);
+}
+
+/* ── 화면들 ── */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s;}
+.screen.show{opacity:1;pointer-events:all;}
+
+/* ══════════════════════════════
+   START SCREEN
+══════════════════════════════ */
+#s-start{background:var(--bg);gap:24px;padding:32px;}
+.start-logo{
+  font-size:clamp(72px,20vw,110px);font-weight:900;color:var(--text);
+  line-height:1;text-align:center;letter-spacing:-4px;
+  text-shadow:4px 4px 0 rgba(92,64,51,0.18);
+}
+.start-sub{font-size:14px;color:rgba(92,64,51,0.55);letter-spacing:1px;text-align:center;}
+.start-desc{
+  background:var(--card);border-radius:16px;padding:16px 20px;
+  font-size:13px;color:var(--text);line-height:1.8;text-align:center;
+  max-width:320px;
+}
+.start-desc b{color:var(--accent);}
+.btn-primary{
+  background:var(--accent);color:#fff;border:none;
+  font-family:'Noto Sans KR',sans-serif;font-size:18px;font-weight:700;
+  padding:16px 56px;border-radius:50px;cursor:pointer;
+  box-shadow:0 4px 0 rgba(200,80,0,0.4);
+  transition:transform 0.1s,box-shadow 0.1s;
+  letter-spacing:1px;
+}
+.btn-primary:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(200,80,0,0.4);}
+
+/* ══════════════════════════════
+   GAME SCREEN
+══════════════════════════════ */
+#s-game{flex-direction:column;justify-content:flex-start;padding:0;}
+
+/* HUD */
+#hud{
+  width:100%;background:var(--stage-bar);
+  padding:10px 16px;display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;border-bottom:2px solid rgba(92,64,51,0.1);
+  position:relative;z-index:10;
+}
+.hud-item{display:flex;flex-direction:column;align-items:center;gap:1px;}
+.hud-label{font-size:9px;color:rgba(92,64,51,0.5);letter-spacing:1px;font-weight:700;text-transform:uppercase;}
+.hud-val{font-size:18px;font-weight:900;color:var(--text);}
+.hud-val.coin{color:var(--accent);}
+.hud-val.time-warn{color:var(--red);animation:pulse 0.5s infinite alternate;}
+@keyframes pulse{from{opacity:1;}to{opacity:0.5;}}
+
+/* 게임 캔버스 */
+#game-canvas{display:block;width:100%;flex:1;cursor:pointer;}
+
+/* 스테이지 알림 */
+#stage-toast{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:var(--accent);color:#fff;
+  font-size:32px;font-weight:900;padding:16px 40px;border-radius:20px;
+  box-shadow:0 6px 0 rgba(200,80,0,0.4);
+  opacity:0;pointer-events:none;transition:opacity 0.3s;z-index:20;
+  white-space:nowrap;
+}
+
+/* ── 도박 이벤트 오버레이 ── */
+#gamble-overlay{
+  position:absolute;inset:0;background:rgba(255,245,225,0.92);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;opacity:0;pointer-events:none;transition:opacity 0.25s;z-index:30;
+  padding:24px;
+}
+#gamble-overlay.show{opacity:1;pointer-events:all;}
+.gamble-ceo{font-size:72px;animation:ceo-sway 0.6s ease-in-out infinite alternate;}
+@keyframes ceo-sway{from{transform:rotate(-8deg);}to{transform:rotate(8deg);}}
+.gamble-title{font-size:20px;font-weight:900;color:var(--text);text-align:center;line-height:1.4;}
+.gamble-odds{font-size:13px;color:rgba(92,64,51,0.6);text-align:center;}
+.gamble-btns{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px;}
+.gamble-btn{
+  padding:16px;border:none;border-radius:16px;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:700;
+  transition:transform 0.1s,box-shadow 0.1s;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.gamble-btn:active{transform:scale(0.97);}
+.gamble-btn.play{background:var(--accent);color:#fff;box-shadow:0 4px 0 rgba(200,80,0,0.35);}
+.gamble-btn.safe{background:var(--green);color:#fff;box-shadow:0 4px 0 rgba(80,160,80,0.35);}
+.gamble-btn .btn-icon{font-size:22px;}
+.gamble-btn .btn-text{flex:1;text-align:center;}
+.gamble-hint{font-size:11px;color:rgba(92,64,51,0.4);text-align:center;}
+
+/* 도박 결과 팝업 */
+#gamble-result{
+  position:absolute;inset:0;background:rgba(255,245,225,0.95);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;opacity:0;pointer-events:none;transition:opacity 0.25s;z-index:31;
+}
+#gamble-result.show{opacity:1;pointer-events:all;}
+.gamble-result-emoji{font-size:80px;}
+.gamble-result-text{font-size:24px;font-weight:900;color:var(--text);text-align:center;}
+.gamble-result-sub{font-size:14px;color:rgba(92,64,51,0.6);}
+
+/* ══════════════════════════════
+   GAME OVER / RANK
+══════════════════════════════ */
+#s-over{gap:20px;padding:28px;background:var(--bg);}
+.over-title{font-size:48px;font-weight:900;color:var(--text);text-align:center;}
+.over-coins{font-size:56px;font-weight:900;color:var(--accent);text-align:center;}
+.over-label{font-size:12px;color:rgba(92,64,51,0.5);letter-spacing:1px;text-align:center;}
+.nick-input{
+  width:100%;max-width:300px;padding:14px 20px;border:2px solid var(--card);
+  background:#fff;border-radius:50px;font-family:'Noto Sans KR',sans-serif;
+  font-size:16px;color:var(--text);text-align:center;outline:none;
+  transition:border-color 0.2s;
+}
+.nick-input:focus{border-color:var(--accent);}
+
+#s-rank{gap:0;padding:0;justify-content:flex-start;background:var(--bg);}
+.rank-header{
+  width:100%;padding:20px 20px 16px;text-align:center;
+  border-bottom:2px solid var(--card);flex-shrink:0;
+}
+.rank-title{font-size:26px;font-weight:900;color:var(--text);}
+.rank-my{font-size:13px;color:var(--accent);margin-top:4px;}
+.rank-list{width:100%;overflow-y:auto;flex:1;padding:8px 0;}
+.rank-item{
+  display:flex;align-items:center;gap:12px;padding:12px 20px;
+  border-bottom:1px solid rgba(255,228,181,0.6);
+  transition:background 0.2s;
+}
+.rank-item.me{background:rgba(255,140,66,0.1);}
+.rank-no{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:900;color:rgba(92,64,51,0.5);
+  background:var(--card);flex-shrink:0;
+}
+.rank-no.gold{background:#FFD700;color:#5C4033;}
+.rank-no.silver{background:#C0C0C0;color:#fff;}
+.rank-no.bronze{background:#CD7F32;color:#fff;}
+.rank-nick{flex:1;font-size:14px;font-weight:700;color:var(--text);}
+.rank-coin{font-size:15px;font-weight:900;color:var(--accent);}
+.rank-footer{padding:16px 20px;flex-shrink:0;}
+</style>
+</head>
+<body>
+<div id="wrap">
+
+  <!-- START -->
+  <div class="screen show" id="s-start">
+    <div class="start-logo">운좀봐</div>
+    <div class="start-sub">RUN · JUMP · EARN</div>
+    <div class="start-desc">
+      점프할 때마다 코인 <b>-1</b><br>
+      가시에 닿으면 <b>-3</b> | 코인 먹으면 <b>+2</b><br>
+      코인 0이 되면 게임오버!<br>
+      <b>5분</b> 안에 최대한 많이 모아봐
+    </div>
+    <button class="btn-primary" onclick="startGame()">시작하기 🎮</button>
+  </div>
+
+  <!-- GAME -->
+  <div class="screen" id="s-game">
+    <div id="hud">
+      <div class="hud-item">
+        <div class="hud-label">STAGE</div>
+        <div class="hud-val" id="h-stage">1</div>
+      </div>
+      <div class="hud-item">
+        <div class="hud-label">TIME</div>
+        <div class="hud-val" id="h-time">5:00</div>
+      </div>
+      <div class="hud-item">
+        <div class="hud-label">COIN</div>
+        <div class="hud-val coin" id="h-coin">100</div>
+      </div>
+    </div>
+    <canvas id="game-canvas"></canvas>
+    <div id="stage-toast"></div>
+    <!-- 도박 -->
+    <div id="gamble-overlay">
+      <div class="gamble-ceo" id="g-ceo">🧓</div>
+      <div class="gamble-title" id="g-title"></div>
+      <div class="gamble-odds" id="g-odds"></div>
+      <div class="gamble-btns">
+        <button class="gamble-btn play" id="g-play" onclick="gambleChoice('play')">
+          <span class="btn-icon">🎲</span>
+          <span class="btn-text" id="g-play-text"></span>
+          <span class="btn-icon">💰</span>
+        </button>
+        <button class="gamble-btn safe" onclick="gambleChoice('safe')">
+          <span class="btn-icon">🛡️</span>
+          <span class="btn-text">그냥 1코인 받기</span>
+          <span class="btn-icon">+1</span>
+        </button>
+      </div>
+      <div class="gamble-hint" id="g-hint">PC: ↑↓ | 모바일: 위/아래 터치</div>
+    </div>
+    <div id="gamble-result">
+      <div class="gamble-result-emoji" id="gr-emoji"></div>
+      <div class="gamble-result-text" id="gr-text"></div>
+      <div class="gamble-result-sub" id="gr-sub"></div>
+    </div>
+  </div>
+
+  <!-- GAME OVER -->
+  <div class="screen" id="s-over">
+    <div class="over-title" id="over-title">⏱️ 시간 종료!</div>
+    <div class="over-label">획득 코인</div>
+    <div class="over-coins" id="over-coins">100</div>
+    <input class="nick-input" id="nick-input" type="text" maxlength="10" placeholder="닉네임을 입력하세요" autocomplete="off">
+    <button class="btn-primary" onclick="submitScore()">순위 확인하기 →</button>
+  </div>
+
+  <!-- RANK -->
+  <div class="screen" id="s-rank">
+    <div class="rank-header">
+      <div class="rank-title">🏆 TOP 10</div>
+      <div class="rank-my" id="rank-my"></div>
+    </div>
+    <div class="rank-list" id="rank-list"></div>
+    <div class="rank-footer">
+      <button class="btn-primary" style="width:100%;" onclick="goStart()">다시 하기 🔄</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ════════════════════════════════════════
+   CONSTANTS & STATE
+════════════════════════════════════════ */
+const TOTAL_TIME = 300; // 5분
+const STAGE_RULES = [
+  {spikesForGamble:3, gamblePct:10},
+  {spikesForGamble:4, gamblePct:20},
+  {spikesForGamble:5, gamblePct:30},
+  {spikesForGamble:6, gamblePct:40},
+  {spikesForGamble:4, gamblePct:100, lose:90}, // stage 5 special
+];
+
+let G = {}; // game state
+let animId = null;
+let lastTime = 0;
+
+/* ════════════════════════════════════════
+   CANVAS SETUP
+════════════════════════════════════════ */
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas(){
+  const wrap = document.getElementById('wrap');
+  const hud = document.getElementById('hud');
+  canvas.width = wrap.clientWidth;
+  canvas.height = wrap.clientHeight - hud.offsetHeight;
+}
+
+/* ════════════════════════════════════════
+   GAME INIT
+════════════════════════════════════════ */
+function startGame(){
+  resizeCanvas();
+  const W = canvas.width, H = canvas.height;
+  const groundY = H * 0.72;
+  const charSize = Math.min(W * 0.13, 56);
+
+  G = {
+    W, H,
+    groundY,
+    charSize,
+    coins: 100,
+    timeLeft: TOTAL_TIME,
+    stage: 1,
+    stageSpikes: 0,      // 이번 스테이지에서 넘은 가시 수
+    gambleCount: [0,0,0,0,0], // 스테이지별 도박 발동 횟수 (무제한)
+
+    // 캐릭터
+    char: {
+      x: W * 0.18,
+      y: groundY,
+      vy: 0,
+      jumpCount: 0,   // 0=땅, 1=1단점프, 2=이중점프
+      frameT: 0,
+      legPhase: 0,
+    },
+
+    // 속도
+    speed: W * 0.384,
+
+    // 오브젝트들
+    spikes: [],
+    coinItems: [],
+    bigCoins: [],
+    bullets: [],      // 스테이지2+
+    pits: [],         // 스테이지3+ 낭떠러지 {x, w}
+
+    // 스폰 타이머
+    spikeTimer: 0,
+    spikeInterval: getRandSpikeInterval(1),
+    coinTimer: 0,
+    coinInterval: getRandCoinInterval(),
+    bigCoinTimer: 0,
+    bigCoinInterval: getRandBigCoinInterval(),
+    bulletTimer: 0,
+    bulletInterval: 2.2 + Math.random() * 1.5,
+    pitTimer: 0,
+    pitInterval: 3.0,
+    pitWarning: null,  // {x, timer} 낭떠러지 경고
+
+    // 스테이지 전환
+    stageToastTimer: 0,
+
+    // 도박
+    gamblePending: false,
+    gambleActive: false,
+    gambleResultTimer: 0,
+
+    // 게임 상태
+    running: false,
+    over: false,
+  };
+
+  showScreen('s-game');
+  G.running = true;
+  lastTime = performance.now();
+  if(animId) cancelAnimationFrame(animId);
+  animId = requestAnimationFrame(loop);
+}
+
+function getRandSpikeInterval(stage){
+  // 스테이지가 높을수록 더 자주
+  const base = Math.max(0.8, 2.8 - stage * 0.32);
+  return base * 0.6 + Math.random() * base;
+}
+function getRandCoinInterval(){
+  return 1.2 + Math.random() * 1.8;
+}
+function getRandBigCoinInterval(){
+  return 6 + Math.random() * 8;
+}
+
+/* ════════════════════════════════════════
+   MAIN LOOP
+════════════════════════════════════════ */
+function loop(ts){
+  if(!G.running){ return; }
+  const dt = Math.min((ts - lastTime) / 1000, 0.05);
+  lastTime = ts;
+
+  if(!G.gambleActive && !G.gamblePending){
+    update(dt);
+  }
+  draw();
+  animId = requestAnimationFrame(loop);
+}
+
+/* ════════════════════════════════════════
+   UPDATE
+════════════════════════════════════════ */
+function update(dt){
+  // 시간
+  G.timeLeft -= dt;
+  if(G.timeLeft <= 0){ G.timeLeft = 0; gameOver('time'); return; }
+
+  // 스테이지 (1분마다)
+  const newStage = Math.min(5, Math.floor((TOTAL_TIME - G.timeLeft) / 60) + 1);
+  if(newStage > G.stage){
+    G.stage = newStage;
+    G.speed *= 1.2;
+    G.stageSpikes = 0;
+    G.spikeInterval = getRandSpikeInterval(G.stage);
+    showStageToast('Stage ' + G.stage);
+  }
+
+  // 스테이지 토스트 타이머
+  if(G.stageToastTimer > 0){
+    G.stageToastTimer -= dt;
+    if(G.stageToastTimer <= 0){
+      document.getElementById('stage-toast').style.opacity = '0';
+    }
+  }
+
+  // 캐릭터 물리
+  const g = G.H * 2.2;
+  G.char.vy += g * dt;
+  G.char.y += G.char.vy * dt;
+  if(G.char.y >= G.groundY){
+    G.char.y = G.groundY;
+    G.char.vy = 0;
+    G.char.jumpCount = 0;
+  }
+  G.char.frameT += dt;
+  if(G.char.jumpCount === 0) G.char.legPhase = Math.sin(G.char.frameT * 10);
+
+  // 스폰: 가시
+  G.spikeTimer += dt;
+  if(G.spikeTimer >= G.spikeInterval){
+    G.spikeTimer = 0;
+    G.spikeInterval = getRandSpikeInterval(G.stage);
+    const sz = G.charSize * (0.35 + Math.random() * 0.25);
+    G.spikes.push({ x: G.W + 30, sz });
+  }
+
+  // 스폰: 코인 (점프해야 먹는 고정 높이)
+  G.coinTimer += dt;
+  if(G.coinTimer >= G.coinInterval){
+    G.coinTimer = 0;
+    G.coinInterval = getRandCoinInterval();
+    // 1단 점프 정점 높이에 고정
+    const cy = G.groundY - G.charSize * 2.1;
+    G.coinItems.push({ x: G.W + 20, y: cy, r: G.charSize * 0.28 });
+  }
+
+  // 스폰: 대형 코인 (이중점프로만 닿는 높이)
+  G.bigCoinTimer += dt;
+  if(G.bigCoinTimer >= G.bigCoinInterval){
+    G.bigCoinTimer = 0;
+    G.bigCoinInterval = getRandBigCoinInterval();
+    const cy = G.groundY - G.charSize * 3.6;
+    G.bigCoins.push({ x: G.W + 20, y: cy, r: G.charSize * 0.45 });
+  }
+
+  // 이동
+  const cx = G.char.x, cy2 = G.char.y, cs = G.charSize * 0.38;
+  G.spikes.forEach(s => s.x -= G.speed * dt);
+  G.coinItems.forEach(c => c.x -= G.speed * dt);
+  G.bigCoins.forEach(c => c.x -= G.speed * dt);
+
+  // ── 스테이지2+: 총알 ──
+  if(G.stage >= 2){
+    G.bulletTimer += dt;
+    if(G.bulletTimer >= G.bulletInterval){
+      G.bulletTimer = 0;
+      G.bulletInterval = 1.5 + Math.random() * 1.8;
+      // 랜덤 높이 (점프 높이 안팎)
+      const by = G.groundY - G.charSize * (0.6 + Math.random() * 1.8);
+      G.bullets.push({ x: G.W + 10, y: by, r: G.charSize * 0.12, spd: G.speed * 1.6 });
+    }
+    G.bullets.forEach(b => b.x -= b.spd * dt);
+    G.bullets = G.bullets.filter(b => b.x > -20);
+    // 총알 충돌
+    G.bullets = G.bullets.filter(b => {
+      const dx = cx - b.x, dy = cy2 - b.y;
+      const hit = Math.sqrt(dx*dx+dy*dy) < cs + b.r;
+      if(hit){ addCoins(-2); }
+      return !hit;
+    });
+  }
+
+  // ── 스테이지3+: 낭떠러지 ──
+  if(G.stage >= 3){
+    G.pitTimer += dt;
+    if(G.pitTimer >= G.pitInterval){
+      G.pitTimer = 0;
+      G.pitInterval = 3.0;
+      const pw = G.charSize * (1.8 + Math.random() * 0.6);
+      G.pits.push({ x: G.W + 10, w: pw });
+    }
+    G.pits.forEach(p => p.x -= G.speed * dt);
+    G.pits = G.pits.filter(p => p.x + p.w > -10);
+    // 낭떠러지 추락 체크 - 캐릭터가 땅 위에 있을 때만
+    if(G.char.jumpCount === 0){
+      for(const p of G.pits){
+        // 캐릭터 발 위치가 낭떠러지 위에 있으면 추락
+        if(cx + cs*0.3 > p.x && cx - cs*0.3 < p.x + p.w){
+          gameOver('pit');
+          return;
+        }
+      }
+    }
+  }
+
+  // 화면 밖 제거
+  G.spikes = G.spikes.filter(s => s.x > -60);
+  G.coinItems = G.coinItems.filter(c => c.x > -40);
+  G.bigCoins = G.bigCoins.filter(c => c.x > -40);
+
+  // 충돌: 가시 (맞으면 -3코인)
+  G.spikes = G.spikes.filter(s => {
+    const hit = Math.abs(cx - s.x) < cs + s.sz * 0.38 && cy2 > G.groundY - s.sz * 0.85;
+    if(hit){ addCoins(-3); }
+    return !hit;
+  });
+
+  // 가시 통과 감지 (점프해서 넘었을 때 = 캐릭터 뒤로 빠져나갈 때)
+  G.spikes.forEach(s => {
+    if(!s.passed && s.x < cx - cs){
+      s.passed = true;
+      G.stageSpikes++;
+      const rule = STAGE_RULES[G.stage - 1];
+      const cnt = G.gambleCount[G.stage - 1];
+      const threshold = rule.spikesForGamble * (cnt + 1);
+      if(G.stageSpikes >= threshold && !G.gambleActive && !G.gamblePending){
+        G.gambleCount[G.stage - 1]++;
+        G.gamblePending = true;
+        G.gambleActive = true;
+        setTimeout(showGamble, 150);
+      }
+    }
+  });
+
+  // 충돌: 코인
+  G.coinItems = G.coinItems.filter(c => {
+    const dx = cx - c.x, dy = cy2 - c.y;
+    const hit = Math.sqrt(dx*dx+dy*dy) < cs + c.r;
+    if(hit) addCoins(2);
+    return !hit;
+  });
+
+  // 충돌: 대형 코인
+  G.bigCoins = G.bigCoins.filter(c => {
+    const dx = cx - c.x, dy = cy2 - c.y;
+    const hit = Math.sqrt(dx*dx+dy*dy) < cs + c.r;
+    if(hit) addCoins(10);
+    return !hit;
+  });
+
+  updateHUD();
+}
+
+function addCoins(n){
+  G.coins = Math.max(0, G.coins + n);
+  if(n > 0) playCoinSound();
+  if(G.coins <= 0){ gameOver('coin'); }
+}
+
+let audioCtx = null;
+function getAC(){ if(!audioCtx) audioCtx = new(window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
+function playCoinSound(){
+  try{
+    const ac = getAC();
+    // 짤랑 소리: 두 개의 짧은 사인파 조합
+    [880, 1320].forEach((freq, i) => {
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ac.currentTime + i * 0.04);
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.3, ac.currentTime + i * 0.04 + 0.08);
+      gain.gain.setValueAtTime(0.22, ac.currentTime + i * 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + i * 0.04 + 0.18);
+      osc.connect(gain); gain.connect(ac.destination);
+      osc.start(ac.currentTime + i * 0.04);
+      osc.stop(ac.currentTime + i * 0.04 + 0.2);
+    });
+  }catch(e){}
+}
+
+/* checkGambleTrigger는 update 내 인라인으로 처리 */
+
+/* ════════════════════════════════════════
+   JUMP
+════════════════════════════════════════ */
+function doJump(){
+  if(G.gambleActive || G.gamblePending || G.over || !G.running) return;
+  if(G.char.jumpCount < 2){
+    G.char.jumpCount++;
+    // 1단: 높이, 2단: 약간 더 높이
+    G.char.vy = G.char.jumpCount === 1 ? -G.H * 0.85 : -G.H * 0.78;
+    addCoins(-1);
+  }
+}
+
+/* ════════════════════════════════════════
+   HUD
+════════════════════════════════════════ */
+function updateHUD(){
+  document.getElementById('h-stage').textContent = G.stage;
+  const m = Math.floor(G.timeLeft / 60);
+  const s = Math.floor(G.timeLeft % 60);
+  const timeEl = document.getElementById('h-time');
+  timeEl.textContent = m + ':' + String(s).padStart(2,'0');
+  timeEl.className = 'hud-val' + (G.timeLeft < 30 ? ' time-warn' : '');
+  document.getElementById('h-coin').textContent = G.coins;
+}
+
+/* ════════════════════════════════════════
+   STAGE TOAST
+════════════════════════════════════════ */
+function showStageToast(text){
+  const el = document.getElementById('stage-toast');
+  el.textContent = text;
+  el.style.opacity = '1';
+  G.stageToastTimer = 1.8;
+}
+
+/* ════════════════════════════════════════
+   DRAW
+════════════════════════════════════════ */
+function draw(){
+  const W = G.W, H = G.H;
+  ctx.clearRect(0, 0, W, H);
+
+  const isNight = G.stage >= 4;
+
+  // 하늘
+  if(isNight){
+    const skyGrd = ctx.createLinearGradient(0, 0, 0, H * 0.75);
+    skyGrd.addColorStop(0, '#050818');
+    skyGrd.addColorStop(0.5, '#0a1230');
+    skyGrd.addColorStop(1, '#121840');
+    ctx.fillStyle = skyGrd;
+    ctx.fillRect(0, 0, W, H);
+    drawNightStars();
+    drawMoon();
+  } else {
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.7);
+    skyGrad.addColorStop(0, '#FFE4B5');
+    skyGrad.addColorStop(1, '#FFF5E1');
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, W, H);
+    drawClouds();
+  }
+
+  // 땅 + 낭떠러지
+  drawGround(isNight);
+
+  // 오브젝트
+  G.spikes.forEach(s => drawSpike(s));
+  G.coinItems.forEach(c => drawCoin(c, false));
+  G.bigCoins.forEach(c => drawCoin(c, true));
+  if(G.stage >= 2) G.bullets.forEach(b => drawBullet(b));
+
+  // 캐릭터
+  drawChar();
+}
+
+let nightStars = null;
+function drawNightStars(){
+  if(!nightStars){
+    nightStars = [];
+    for(let i=0;i<80;i++) nightStars.push({x:Math.random(), y:Math.random()*0.65, r:Math.random()*1.4+0.3, a:Math.random()*0.8+0.2});
+  }
+  const t = Date.now()*0.001;
+  nightStars.forEach((s,i)=>{
+    const twinkle = 0.5 + 0.5*Math.sin(t*1.5+i*0.7);
+    ctx.fillStyle = `rgba(220,230,255,${s.a*twinkle})`;
+    ctx.beginPath(); ctx.arc(s.x*G.W, s.y*G.H, s.r, 0, Math.PI*2); ctx.fill();
+  });
+}
+
+function drawMoon(){
+  const mx = G.W*0.82, my = G.H*0.12, mr = G.charSize*0.7;
+  // 달 glow
+  const grd = ctx.createRadialGradient(mx,my,0,mx,my,mr*2.5);
+  grd.addColorStop(0,'rgba(200,200,150,0.15)');
+  grd.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=grd; ctx.beginPath(); ctx.arc(mx,my,mr*2.5,0,Math.PI*2); ctx.fill();
+  // 달 본체
+  ctx.fillStyle='#F5F0C0';
+  ctx.beginPath(); ctx.arc(mx,my,mr,0,Math.PI*2); ctx.fill();
+  // 달 크레이터
+  ctx.fillStyle='rgba(180,170,100,0.3)';
+  [[0.3,0.2,0.22],[-0.2,0.35,0.15],[0.1,-0.25,0.12]].forEach(([dx,dy,dr])=>{
+    ctx.beginPath(); ctx.arc(mx+dx*mr,my+dy*mr,dr*mr,0,Math.PI*2); ctx.fill();
+  });
+  // 그림자 (반달 효과)
+  ctx.fillStyle='rgba(5,8,24,0.45)';
+  ctx.beginPath(); ctx.arc(mx+mr*0.28,my,mr*0.92,0,Math.PI*2); ctx.fill();
+}
+
+function drawGround(isNight){
+  const gy = G.groundY + G.charSize * 0.5;
+  const W = G.W, H = G.H;
+
+  if(G.stage >= 3 && G.pits.length > 0){
+    // 낭떠러지가 있으면 구간별로 땅 그리기
+    // 전체 구간 먼저 채우고 낭떠러지는 구멍
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, gy, W, H - gy);
+    // 낭떠러지 구멍 제거
+    G.pits.forEach(p => {
+      ctx.rect(Math.max(0,p.x), gy, Math.min(p.w, W - Math.max(0,p.x)), H - gy);
+    });
+    ctx.fillStyle = isNight ? '#1a0a00' : '#D4A96A';
+    ctx.fill('evenodd');
+
+    // 잔디/지면 상단
+    ctx.beginPath();
+    let gx = 0;
+    G.pits.forEach(p => {
+      if(p.x > gx) ctx.rect(gx, gy, p.x - gx, G.charSize * 0.18);
+      gx = p.x + p.w;
+    });
+    if(gx < W) ctx.rect(gx, gy, W - gx, G.charSize * 0.18);
+    ctx.fillStyle = isNight ? '#1a3020' : '#7BC67A';
+    ctx.fill();
+
+    // 낭떠러지 경고 표시 (빨간 테두리)
+    G.pits.forEach(p => {
+      if(p.x > 0 && p.x < W){
+        ctx.strokeStyle = 'rgba(255,50,50,0.8)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6,4]);
+        ctx.beginPath();
+        ctx.moveTo(p.x, gy - G.charSize*0.5);
+        ctx.lineTo(p.x, gy + G.charSize*0.3);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        // 경고 아이콘
+        ctx.fillStyle = 'rgba(255,50,50,0.9)';
+        ctx.font = `bold ${G.charSize*0.5}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText('⚠', p.x + p.w/2, gy - G.charSize*0.4);
+      }
+    });
+
+    // 낭떠러지 아래 무한 어둠
+    G.pits.forEach(p => {
+      const grd = ctx.createLinearGradient(0, gy, 0, gy + G.charSize*2);
+      grd.addColorStop(0, 'rgba(0,0,0,0.8)');
+      grd.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grd;
+      ctx.fillRect(p.x, gy, p.w, G.charSize*2);
+    });
+
+    ctx.restore();
+  } else {
+    ctx.fillStyle = isNight ? '#1a0a00' : '#D4A96A';
+    ctx.fillRect(0, gy, W, H - gy);
+    ctx.fillStyle = isNight ? '#1a3020' : '#7BC67A';
+    ctx.fillRect(0, gy, W, G.charSize * 0.18);
+  }
+
+  // 야간: 으스스한 안개
+  if(isNight){
+    const fogGrd = ctx.createLinearGradient(0, gy - G.charSize*0.5, 0, gy + G.charSize);
+    fogGrd.addColorStop(0,'rgba(20,20,60,0)');
+    fogGrd.addColorStop(0.5,'rgba(20,20,60,0.18)');
+    fogGrd.addColorStop(1,'rgba(20,20,60,0.4)');
+    ctx.fillStyle=fogGrd;
+    ctx.fillRect(0, gy - G.charSize*0.5, W, G.charSize*1.5);
+  }
+}
+
+function drawBullet(b){
+  // 총알 glow
+  const grd = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r*3);
+  grd.addColorStop(0,'rgba(255,100,0,0.5)');
+  grd.addColorStop(1,'rgba(255,50,0,0)');
+  ctx.fillStyle=grd;
+  ctx.beginPath(); ctx.arc(b.x, b.y, b.r*3, 0, Math.PI*2); ctx.fill();
+  // 총알 몸체 (타원형)
+  ctx.save();
+  ctx.translate(b.x, b.y);
+  ctx.fillStyle='#FF4400';
+  ctx.beginPath(); ctx.ellipse(0, 0, b.r*2, b.r, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle='#FFAA00';
+  ctx.beginPath(); ctx.ellipse(-b.r*0.3, -b.r*0.3, b.r*0.7, b.r*0.4, -0.3, 0, Math.PI*2); ctx.fill();
+  // 꼬리 불꽃
+  ctx.strokeStyle='rgba(255,150,0,0.7)';
+  ctx.lineWidth=b.r*0.8;
+  ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(b.r*1.8, 0); ctx.lineTo(b.r*4.5, 0); ctx.stroke();
+  ctx.strokeStyle='rgba(255,220,100,0.5)';
+  ctx.lineWidth=b.r*0.4;
+  ctx.beginPath(); ctx.moveTo(b.r*2, 0); ctx.lineTo(b.r*5.5, 0); ctx.stroke();
+  ctx.restore();
+}
+
+let cloudOffset = 0;
+function drawClouds(){
+  cloudOffset = (cloudOffset + 0.3) % (G.W + 200);
+  [[0.15, 0.12, 1.0], [0.5, 0.07, 0.8], [0.75, 0.16, 1.2]].forEach(([rx,ry,sc]) => {
+    const cx = ((G.W * rx - cloudOffset + G.W + 200) % (G.W + 200)) - 100;
+    const cy = G.H * ry;
+    ctx.globalAlpha = 0.55;
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.ellipse(cx, cy, 38*sc, 18*sc, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx-22*sc, cy+4*sc, 22*sc, 14*sc, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx+22*sc, cy+4*sc, 26*sc, 14*sc, 0, 0, Math.PI*2); ctx.fill();
+    ctx.globalAlpha = 1;
+  });
+}
+
+function drawSpike(s){
+  const bx = s.x, by = G.groundY + G.charSize * 0.5;
+
+  // 빨간 glow
+  const grd = ctx.createRadialGradient(bx, by - s.sz*0.3, 0, bx, by - s.sz*0.3, s.sz*1.2);
+  grd.addColorStop(0, 'rgba(255,0,0,0.25)');
+  grd.addColorStop(1, 'rgba(255,0,0,0)');
+  ctx.fillStyle = grd;
+  ctx.beginPath(); ctx.arc(bx, by - s.sz*0.3, s.sz*1.2, 0, Math.PI*2); ctx.fill();
+
+  // 왼쪽 면 (어두운 빨강)
+  ctx.fillStyle = '#CC0000';
+  ctx.beginPath();
+  ctx.moveTo(bx, by);
+  ctx.lineTo(bx - s.sz * 0.5, by);
+  ctx.lineTo(bx, by - s.sz);
+  ctx.closePath(); ctx.fill();
+
+  // 오른쪽 면 (밝은 빨강)
+  ctx.fillStyle = '#FF1111';
+  ctx.beginPath();
+  ctx.moveTo(bx, by);
+  ctx.lineTo(bx + s.sz * 0.5, by);
+  ctx.lineTo(bx, by - s.sz);
+  ctx.closePath(); ctx.fill();
+
+  // 테두리 - 진한 외곽선
+  ctx.strokeStyle = '#880000';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(bx - s.sz*0.5, by);
+  ctx.lineTo(bx, by - s.sz);
+  ctx.lineTo(bx + s.sz*0.5, by);
+  ctx.closePath(); ctx.stroke();
+
+  // 뾰족한 끝 하이라이트
+  ctx.fillStyle = '#FF6666';
+  ctx.beginPath();
+  ctx.moveTo(bx, by - s.sz);
+  ctx.lineTo(bx - s.sz*0.06, by - s.sz*0.82);
+  ctx.lineTo(bx + s.sz*0.06, by - s.sz*0.82);
+  ctx.closePath(); ctx.fill();
+}
+
+function drawCoin(c, big){
+  const glowSize = big ? c.r * 2.2 : c.r * 1.6;
+  const grd = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, glowSize);
+  grd.addColorStop(0, big ? 'rgba(255,220,0,0.35)' : 'rgba(255,200,0,0.2)');
+  grd.addColorStop(1, 'rgba(255,200,0,0)');
+  ctx.fillStyle = grd;
+  ctx.beginPath(); ctx.arc(c.x, c.y, glowSize, 0, Math.PI*2); ctx.fill();
+
+  ctx.fillStyle = big ? '#FFD700' : '#FFC200';
+  ctx.strokeStyle = big ? '#CC9900' : '#E0A800';
+  ctx.lineWidth = big ? 2.5 : 1.8;
+  ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, Math.PI*2);
+  ctx.fill(); ctx.stroke();
+
+  ctx.fillStyle = big ? '#CC9900' : '#E0A800';
+  ctx.font = `bold ${Math.round(c.r * (big?1.1:1.0))}px Noto Sans KR, sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(big ? '★' : '₩', c.x, c.y);
+}
+
+function drawChar(){
+  const x = G.char.x, y = G.char.y;
+  const s = G.charSize;
+  const lp = G.char.legPhase;
+  const isJump = G.char.jumpCount > 0;
+  const isDbl = G.char.jumpCount === 2;
+  const t = G.char.frameT;
+
+  ctx.save();
+
+  // 그림자
+  const shadowScale = isJump ? Math.max(0.3, 1 - (G.groundY - y)/(s*3)) : 1;
+  ctx.globalAlpha = 0.13 * shadowScale;
+  ctx.fillStyle = '#333';
+  ctx.beginPath(); ctx.ellipse(x, G.groundY+s*0.52, s*0.45*shadowScale, s*0.09*shadowScale, 0, 0, Math.PI*2); ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // 이중점프 스파크
+  if(isDbl){
+    for(let i=0;i<6;i++){
+      const a = (i/6)*Math.PI*2, r = s*0.55;
+      ctx.fillStyle = `rgba(255,200,50,${0.6-i*0.08})`;
+      ctx.beginPath(); ctx.arc(x+Math.cos(a)*r, y+s*0.1+Math.sin(a)*r*0.4, s*0.07, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
+  // ── 꼬리 ──
+  const tailAngle = isJump ? -0.5 : Math.sin(t*8)*0.35;
+  ctx.save();
+  ctx.translate(x - s*0.28, y + s*0.05);
+  ctx.rotate(tailAngle);
+  // 꼬리 몸통 (줄무늬 너구리 꼬리)
+  for(let i=0;i<5;i++){
+    ctx.fillStyle = i%2===0 ? '#888888' : '#f5f0e8';
+    ctx.beginPath();
+    ctx.ellipse(-s*(0.15+i*0.12), -s*0.05, s*0.1, s*0.14, -0.4, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // ── 뒷다리 ──
+  const legW = s * 0.17;
+  ctx.lineCap = 'round';
+  if(isJump){
+    // 점프 - 다리 접음
+    [[x-s*0.12, y+s*0.35, x-s*0.06, y+s*0.58, x-s*0.18, y+s*0.62],
+     [x+s*0.12, y+s*0.35, x+s*0.2,  y+s*0.55, x+s*0.08, y+s*0.6 ]].forEach(([x1,y1,x2,y2,x3,y3])=>{
+      ctx.strokeStyle='#7a5030'; ctx.lineWidth=legW;
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x3,y3); ctx.stroke();
+    });
+  } else {
+    // 달리기
+    const l1y = lp*s*0.12, l2y = -lp*s*0.12;
+    [[x-s*0.12, y+s*0.35, x-s*0.1, y+s*0.55+l1y, x-s*0.18, y+s*0.64+l1y],
+     [x+s*0.12, y+s*0.35, x+s*0.1, y+s*0.55+l2y, x+s*0.18, y+s*0.64+l2y]].forEach(([x1,y1,x2,y2,x3,y3])=>{
+      ctx.strokeStyle='#7a5030'; ctx.lineWidth=legW;
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x3,y3); ctx.stroke();
+    });
+  }
+
+  // ── 발 ──
+  ctx.fillStyle = '#5a3820';
+  if(isJump){
+    ctx.beginPath(); ctx.ellipse(x-s*0.18, y+s*0.62, s*0.13, s*0.07, -0.3, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x+s*0.08,  y+s*0.6,  s*0.13, s*0.07,  0.3, 0, Math.PI*2); ctx.fill();
+  } else {
+    ctx.beginPath(); ctx.ellipse(x-s*0.18, y+s*0.64+lp*s*0.12,  s*0.14, s*0.07, -0.2, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x+s*0.18, y+s*0.64-lp*s*0.12,  s*0.14, s*0.07,  0.2, 0, Math.PI*2); ctx.fill();
+  }
+
+  // ── 몸통 ──
+  // 배 (밝은 크림색)
+  ctx.fillStyle = '#f0e8d0';
+  ctx.beginPath(); ctx.ellipse(x, y+s*0.12, s*0.24, s*0.3, 0, 0, Math.PI*2); ctx.fill();
+  // 몸통 (회갈색)
+  const bodyGrd = ctx.createRadialGradient(x-s*0.08, y-s*0.05, s*0.05, x, y+s*0.1, s*0.38);
+  bodyGrd.addColorStop(0, '#9a8060');
+  bodyGrd.addColorStop(0.6, '#7a6048');
+  bodyGrd.addColorStop(1, '#5a4030');
+  ctx.fillStyle = bodyGrd;
+  ctx.beginPath(); ctx.ellipse(x, y+s*0.1, s*0.32, s*0.36, 0, 0, Math.PI*2); ctx.fill();
+  // 배 다시 위에
+  ctx.fillStyle = 'rgba(240,232,208,0.6)';
+  ctx.beginPath(); ctx.ellipse(x, y+s*0.18, s*0.18, s*0.22, 0, 0, Math.PI*2); ctx.fill();
+
+  // ── 앞발 ──
+  if(isJump){
+    [[x-s*0.3, y-s*0.06, x-s*0.52, y-s*0.22],
+     [x+s*0.3, y-s*0.06, x+s*0.52, y-s*0.22]].forEach(([x1,y1,x2,y2])=>{
+      ctx.strokeStyle='#7a6048'; ctx.lineWidth=s*0.15; ctx.lineCap='round';
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      ctx.fillStyle='#5a3820';
+      ctx.beginPath(); ctx.arc(x2, y2, s*0.09, 0, Math.PI*2); ctx.fill();
+    });
+  } else {
+    [[x-s*0.3, y, x-s*0.48, y+s*0.18+lp*s*0.1],
+     [x+s*0.3, y, x+s*0.48, y+s*0.18-lp*s*0.1]].forEach(([x1,y1,x2,y2])=>{
+      ctx.strokeStyle='#7a6048'; ctx.lineWidth=s*0.15; ctx.lineCap='round';
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      ctx.fillStyle='#5a3820';
+      ctx.beginPath(); ctx.arc(x2, y2, s*0.09, 0, Math.PI*2); ctx.fill();
+    });
+  }
+
+  // ── 목 ──
+  ctx.fillStyle = '#9a8060';
+  ctx.beginPath(); ctx.ellipse(x, y-s*0.22, s*0.16, s*0.12, 0, 0, Math.PI*2); ctx.fill();
+
+  // ── 머리 ──
+  // 머리 기본 (회갈색)
+  const headGrd = ctx.createRadialGradient(x-s*0.1, y-s*0.44, s*0.04, x, y-s*0.36, s*0.36);
+  headGrd.addColorStop(0, '#a08868');
+  headGrd.addColorStop(0.7, '#7a6048');
+  headGrd.addColorStop(1, '#5a4030');
+  ctx.fillStyle = headGrd;
+  ctx.beginPath(); ctx.arc(x, y-s*0.36, s*0.34, 0, Math.PI*2); ctx.fill();
+
+  // ── 너구리 특징: 검은 눈 마스크 ──
+  ctx.fillStyle = '#1a1a1a';
+  ctx.beginPath(); ctx.ellipse(x-s*0.13, y-s*0.36, s*0.16, s*0.12, -0.15, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(x+s*0.13, y-s*0.36, s*0.16, s*0.12,  0.15, 0, Math.PI*2); ctx.fill();
+  // 마스크 가운데 연결
+  ctx.fillStyle = '#1a1a1a';
+  ctx.beginPath(); ctx.rect(x-s*0.06, y-s*0.43, s*0.12, s*0.14); ctx.fill();
+
+  // 얼굴 흰 부분 (뺨)
+  ctx.fillStyle = '#f0ece0';
+  ctx.beginPath(); ctx.ellipse(x-s*0.2, y-s*0.26, s*0.13, s*0.1, 0.2, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(x+s*0.2, y-s*0.26, s*0.13, s*0.1, -0.2, 0, Math.PI*2); ctx.fill();
+  // 주둥이
+  ctx.fillStyle = '#e8dcc8';
+  ctx.beginPath(); ctx.ellipse(x, y-s*0.28, s*0.16, s*0.12, 0, 0, Math.PI*2); ctx.fill();
+
+  // ── 귀 ──
+  [[-0.28, -0.62], [0.28, -0.62]].forEach(([ex,ey])=>{
+    ctx.fillStyle = '#5a4030';
+    ctx.beginPath(); ctx.ellipse(x+ex*s, y+ey*s, s*0.1, s*0.13, ex>0?0.3:-0.3, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#c8a090';
+    ctx.beginPath(); ctx.ellipse(x+ex*s, y+ey*s, s*0.06, s*0.08, ex>0?0.3:-0.3, 0, Math.PI*2); ctx.fill();
+  });
+
+  // ── 눈 ──
+  // 흰자
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.ellipse(x-s*0.13, y-s*0.38, s*0.075, s*0.085, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(x+s*0.13, y-s*0.38, s*0.075, s*0.085, 0, 0, Math.PI*2); ctx.fill();
+  // 동공 (점프 시 동그랗게, 달릴 때 약간 납작)
+  ctx.fillStyle = '#111';
+  if(isJump){
+    ctx.beginPath(); ctx.arc(x-s*0.13, y-s*0.38, s*0.055, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x+s*0.13, y-s*0.38, s*0.055, 0, Math.PI*2); ctx.fill();
+  } else {
+    ctx.beginPath(); ctx.ellipse(x-s*0.13, y-s*0.38, s*0.05, s*0.065, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x+s*0.13, y-s*0.38, s*0.05, s*0.065, 0, 0, Math.PI*2); ctx.fill();
+  }
+  // 눈 하이라이트
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(x-s*0.115, y-s*0.40, s*0.02, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+s*0.145, y-s*0.40, s*0.02, 0, Math.PI*2); ctx.fill();
+
+  // ── 코 ──
+  ctx.fillStyle = '#2a1a12';
+  ctx.beginPath(); ctx.ellipse(x, y-s*0.27, s*0.055, s*0.04, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.beginPath(); ctx.arc(x-s*0.02, y-s*0.285, s*0.018, 0, Math.PI*2); ctx.fill();
+
+  // ── 입/수염 ──
+  ctx.strokeStyle = '#5a3820'; ctx.lineWidth = s*0.03; ctx.lineCap = 'round';
+  ctx.beginPath();
+  if(isJump){
+    ctx.arc(x, y-s*0.22, s*0.07, 0.15, Math.PI-0.15);
+  } else {
+    ctx.moveTo(x-s*0.04, y-s*0.23); ctx.lineTo(x, y-s*0.19); ctx.lineTo(x+s*0.04, y-s*0.23);
+  }
+  ctx.stroke();
+  // 수염
+  ctx.strokeStyle = 'rgba(80,50,30,0.55)'; ctx.lineWidth = s*0.018;
+  [[-0.22,-0.25,-0.44,-0.24],[-0.22,-0.28,-0.44,-0.3],
+   [ 0.22,-0.25, 0.44,-0.24],[ 0.22,-0.28, 0.44,-0.3]].forEach(([x1,y1,x2,y2])=>{
+    ctx.beginPath(); ctx.moveTo(x+x1*s,y+y1*s); ctx.lineTo(x+x2*s,y+y2*s); ctx.stroke();
+  });
+
+  // 점프 시 신남 표시
+  if(isJump){
+    ctx.fillStyle = 'rgba(255,200,50,0.85)';
+    ctx.font = `bold ${s*0.28}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('✦', x+s*0.42, y-s*0.55);
+  }
+
+  ctx.restore();
+}
+
+/* ════════════════════════════════════════
+   GAMBLE
+════════════════════════════════════════ */
+function showGamble(){
+  const rule = STAGE_RULES[G.stage - 1];
+  const isSpecial = G.stage === 5;
+  const pct = rule.gamblePct;
+
+  document.getElementById('g-title').textContent = isSpecial
+    ? '💸 최후의 도박이다!'
+    : `⚡ 스테이지 ${G.stage} 도박 이벤트!`;
+  document.getElementById('g-odds').textContent = isSpecial
+    ? `50% → 코인 +100% / 50% → 코인 -90%`
+    : `50% → 코인 +${pct}% / 50% → 코인 -${pct}%`;
+  document.getElementById('g-play-text').textContent = isSpecial
+    ? `게임하기 (+100% / -90%)`
+    : `게임하기 (+${pct}% / -${pct}%)`;
+  document.getElementById('g-hint').textContent = '↑ 게임하기   ↓ 1코인 받기';
+  document.getElementById('gamble-overlay').classList.add('show');
+}
+
+function gambleChoice(choice){
+  document.getElementById('gamble-overlay').classList.remove('show');
+  const rule = STAGE_RULES[G.stage - 1];
+  const isSpecial = G.stage === 5;
+  let emoji, text, sub;
+
+  if(choice === 'safe'){
+    addCoins(1);
+    emoji = '🛡️'; text = '+1 코인 획득!'; sub = '안전한 선택이에요';
+  } else {
+    const win = Math.random() < 0.5;
+    if(isSpecial){
+      if(win){
+        const gain = G.coins;
+        addCoins(gain);
+        emoji = '🤑'; text = `코인 2배!`; sub = `+${gain}코인`;
+      } else {
+        const lose = Math.floor(G.coins * 0.9);
+        addCoins(-lose);
+        emoji = '😱'; text = `코인 90% 사라짐!`; sub = `-${lose}코인`;
+      }
+    } else {
+      const pct = rule.gamblePct;
+      if(win){
+        const gain = Math.ceil(G.coins * pct / 100);
+        addCoins(gain);
+        emoji = '🎉'; text = `+${pct}% 당첨!`; sub = `+${gain}코인`;
+      } else {
+        const lose = Math.ceil(G.coins * pct / 100);
+        addCoins(-lose);
+        emoji = '😢'; text = `-${pct}% 빗나감`; sub = `-${lose}코인`;
+      }
+    }
+  }
+
+  if(G.over){ G.gambleActive=false; G.gamblePending=false; return; }
+
+  // 결과 팝업
+  document.getElementById('gr-emoji').textContent = emoji;
+  document.getElementById('gr-text').textContent = text;
+  document.getElementById('gr-sub').textContent = sub;
+  const resultEl = document.getElementById('gamble-result');
+  resultEl.classList.add('show');
+  setTimeout(()=>{
+    resultEl.classList.remove('show');
+    G.gambleActive = false;
+    G.gamblePending = false;
+  }, 1800);
+}
+
+// 도박 키보드 조작
+function gambleKeySelect(up){
+  if(!G.gambleActive) return;
+  if(!document.getElementById('gamble-overlay').classList.contains('show')) return;
+  gambleChoice(up ? 'play' : 'safe');
+}
+
+/* ════════════════════════════════════════
+   GAME OVER
+════════════════════════════════════════ */
+function gameOver(reason){
+  G.running = false;
+  G.over = true;
+  cancelAnimationFrame(animId);
+  const finalCoins = G.coins;
+
+  document.getElementById('over-title').textContent =
+    reason === 'time' ? '⏱️ 시간 종료!' :
+    reason === 'pit'  ? '🕳️ 낭떠러지에 빠졌다!' : '💸 코인 부족!';
+  document.getElementById('over-coins').textContent = finalCoins;
+
+  // 이전 닉네임 기억
+  const saved = localStorage.getItem('unjom_nick') || '';
+  document.getElementById('nick-input').value = saved;
+
+  showScreen('s-over');
+}
+
+/* ════════════════════════════════════════
+   SCORE / RANK (localStorage)
+════════════════════════════════════════ */
+function getScores(){
+  try{ return JSON.parse(localStorage.getItem('unjom_scores') || '[]'); }
+  catch(e){ return []; }
+}
+function saveScores(arr){ localStorage.setItem('unjom_scores', JSON.stringify(arr)); }
+
+function submitScore(){
+  const nick = document.getElementById('nick-input').value.trim() || '익명';
+  localStorage.setItem('unjom_nick', nick);
+  const score = G.coins;
+  const scores = getScores();
+  scores.push({ nick, score, date: new Date().toLocaleDateString('ko-KR') });
+  scores.sort((a,b) => b.score - a.score);
+  saveScores(scores);
+
+  // 내 등수
+  const myRank = scores.findIndex(s => s.nick === nick && s.score === score) + 1;
+  const top10 = scores.slice(0, 10);
+  const inTop = myRank <= 10;
+
+  // 순위표 렌더
+  const list = document.getElementById('rank-list');
+  list.innerHTML = '';
+  top10.forEach((s, i) => {
+    const isMe = s.nick === nick && s.score === score && (i + 1) === myRank;
+    const item = document.createElement('div');
+    item.className = 'rank-item' + (isMe ? ' me' : '');
+    const noClass = i===0?'gold':i===1?'silver':i===2?'bronze':'';
+    const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);
+    item.innerHTML = `
+      <div class="rank-no ${noClass}">${medal}</div>
+      <div class="rank-nick">${escHtml(s.nick)}</div>
+      <div class="rank-coin">${s.score} <span style="font-size:11px;color:rgba(92,64,51,0.5)">코인</span></div>
+    `;
+    list.appendChild(item);
+  });
+
+  const myEl = document.getElementById('rank-my');
+  if(inTop){
+    myEl.textContent = `✨ ${myRank}위 입성! ${score}코인`;
+  } else {
+    myEl.textContent = `당신은 ${myRank}위`;
+  }
+
+  showScreen('s-rank');
+}
+
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ════════════════════════════════════════
+   SCREEN MANAGER
+════════════════════════════════════════ */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>{
+    s.classList.remove('show');
+  });
+  document.getElementById(id).classList.add('show');
+}
+
+function goStart(){
+  showScreen('s-start');
+}
+
+/* ════════════════════════════════════════
+   INPUT
+════════════════════════════════════════ */
+// 키보드
+window.addEventListener('keydown', e => {
+  if(e.code === 'Space' || e.key === ' '){
+    e.preventDefault();
+    if(document.getElementById('s-game').classList.contains('show')) doJump();
+  }
+  if(e.key === 'ArrowUp') gambleKeySelect(true);
+  if(e.key === 'ArrowDown') gambleKeySelect(false);
+});
+
+// 터치
+let touchStartY = 0;
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  touchStartY = e.touches[0].clientY;
+  const gambleEl = document.getElementById('gamble-overlay');
+  if(gambleEl.classList.contains('show')){
+    const mid = window.innerHeight / 2;
+    gambleKeySelect(touchStartY < mid);
+  } else {
+    doJump();
+  }
+}, { passive: false });
+
+// 마우스 클릭 (PC)
+canvas.addEventListener('mousedown', e => {
+  const gambleEl = document.getElementById('gamble-overlay');
+  if(gambleEl.classList.contains('show')){
+    const mid = canvas.getBoundingClientRect().top + canvas.height / 2;
+    gambleKeySelect(e.clientY < mid);
+  } else {
+    doJump();
+  }
+});
+
+// 리사이즈
+window.addEventListener('resize', () => {
+  if(document.getElementById('s-game').classList.contains('show') && G.running){
+    resizeCanvas();
+  }
+});
+</script>
+</body>
+</html>
