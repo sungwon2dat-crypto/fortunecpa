@@ -201,6 +201,12 @@
   </div>
 </div>
 
+<!-- 모바일 스킬 버튼 -->
+<div id="mobileSkills" style="display:none;position:fixed;bottom:70px;right:14px;z-index:50;display:flex;flex-direction:column;gap:10px;">
+  <button id="mUltBtn" ontouchstart="event.preventDefault();activateUlt();" style="width:56px;height:56px;border-radius:50%;background:rgba(255,68,68,0.18);border:2px solid rgba(255,68,68,0.6);color:#fff;font-size:1.4rem;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;">💥</button>
+  <button id="mFrzBtn" ontouchstart="event.preventDefault();activateFreeze();" style="width:56px;height:56px;border-radius:50%;background:rgba(68,170,255,0.18);border:2px solid rgba(68,170,255,0.6);color:#fff;font-size:1.4rem;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;">❄️</button>
+</div>
+
 <script>
 // ─── Score API ─────────────────────────────────────────────────────────────────
 const SCORE_API = 'https://script.google.com/macros/s/AKfycbyt6M_Lx_JfSCOVh9U8JxfjXo9CLAAZhy2j2tC73GEOqqUzYkbNndBzOX8T12Vj5W_pwg/exec';
@@ -225,10 +231,13 @@ async function submitScore(nickname, scoreVal) {
 const isMobile = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 if (!isMobile) document.body.classList.add('desktop');
 if (isMobile) {
+  document.getElementById('mobileSkills').style.display='flex';
   document.getElementById('controlHint').innerHTML =
     '<span>왼쪽 조이스틱</span> — UFO 이동<br>' +
     '<span>오른쪽 터치</span> — 조준<br>' +
     '<span>AUTO FIRE</span> — 자동 발사<br>' +
+    '<span>💥 우측하단</span> — 궁극기<br>' +
+    '<span>❄️ 우측하단</span> — 빙결<br>' +
     '<span>10초마다</span> — 랜덤 파워업';
 }
 
@@ -330,17 +339,17 @@ const NEBULAE=Array.from({length:7},()=>({
 
 // ─── Player image ─────────────────────────────────────────────────────────────
 const planeImg=new Image();
-planeImg.crossOrigin='anonymous';
 planeImg.src='https://sungwon2dat-crypto.github.io/fortunecpa/plane.jpg';
 let planeImgLoaded=false;
 planeImg.onload=()=>planeImgLoaded=true;
+planeImg.onerror=()=>console.warn('plane.jpg 로드 실패');
 
 // ─── Boss image ───────────────────────────────────────────────────────────────
 const bossImg=new Image();
-bossImg.crossOrigin='anonymous';
 bossImg.src='https://sungwon2dat-crypto.github.io/fortunecpa/boss.png';
 let bossImgLoaded=false;
 bossImg.onload=()=>bossImgLoaded=true;
+bossImg.onerror=()=>console.warn('boss.png 로드 실패');
 
 // ─── Game state ───────────────────────────────────────────────────────────────
 let state='idle';
@@ -905,7 +914,7 @@ function loop(ts){
   if(ultFlash>0) ultFlash=Math.max(0,ultFlash-dtSec*3);
   updateSkillUI();
 
-  if(isMobile&&joy.active){turret.x+=(joy.dx/joy.R)*turret.speed*3.2;turret.y+=(joy.dy/joy.R)*turret.speed*3.2;}
+  if(isMobile&&joy.active){turret.x+=(joy.dx/joy.R)*turret.speed*1.8;turret.y+=(joy.dy/joy.R)*turret.speed*1.8;}
   else{
     if(keys['ArrowLeft']||keys['a']||keys['A'])turret.x-=turret.speed;
     if(keys['ArrowRight']||keys['d']||keys['D'])turret.x+=turret.speed;
