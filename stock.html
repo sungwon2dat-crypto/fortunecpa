@@ -293,24 +293,46 @@ async function loadAll() {
   document.getElementById('global-loading').style.display = 'block';
   document.getElementById('macro-wrap').style.display = 'none';
   document.getElementById('sector-grid').style.display = 'none';
+  document.getElementById('sector-grid').innerHTML = '';
 
-  // 매크로 + 섹터 종목 한꺼번에 수집
-  const sectorSyms = [...new Set(SECTORS.flatMap(s => s.syms))];
-  const allSyms = [...new Set([...MACRO_SYMS, ...sectorSyms])];
-
-  const BATCH = 25;
-  for(let i = 0; i < allSyms.length; i += BATCH){
-    await fetchBatch(allSyms.slice(i, i + BATCH));
-  }
-
+  // ① 매크로 먼저 (19종목, 빠름)
+  await fetchBatch(MACRO_SYMS);
   renderMacroSection();
-  renderGrid();
-
   document.getElementById('global-loading').style.display = 'none';
   document.getElementById('macro-wrap').style.display = 'block';
-  document.getElementById('sector-grid').style.display = 'grid';
   document.getElementById('last-update').textContent =
     '업데이트: ' + new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'});
+
+  // ② 섹터 순차 로드 (배치마다 카드 추가)
+  document.getElementById('sector-grid').style.display = 'grid';
+  const sectorSyms = [...new Set(SECTORS.flatMap(s => s.syms))];
+  const BATCH = 20;
+  for(let i = 0; i < sectorSyms.length; i += BATCH){
+    await fetchBatch(sectorSyms.slice(i, i + BATCH));
+    // 이미 데이터 있는 섹터 카드 추가
+    const loaded = new Set(Object.keys(priceCache).filter(k => priceCache[k]));
+    const grid = document.getElementById('sector-grid');
+    SECTORS.forEach(sector => {
+      const id = 'sc-' + sector.name;
+      if(document.getElementById(id)) return; // 이미 있으면 스킵
+      if(sector.syms.some(s => loaded.has(s))){
+        const card = makeSectorCard(sector);
+        card.id = id;
+        grid.appendChild(card);
+      }
+    });
+  }
+
+  // 혹시 빠진 카드 마저 추가
+  const grid = document.getElementById('sector-grid');
+  SECTORS.forEach(sector => {
+    const id = 'sc-' + sector.name;
+    if(!document.getElementById(id)){
+      const card = makeSectorCard(sector);
+      card.id = id;
+      grid.appendChild(card);
+    }
+  });
 }
 
 /* ════════════════════════════
