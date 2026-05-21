@@ -164,6 +164,29 @@ html,body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans
   .period-tabs{gap:2px;}
   .period-btn{padding:4px 8px;font-size:11px;}
 }
+
+/* ── 인사이트 카드 4개 ── */
+.insight-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:4px;}
+@media(max-width:900px){.insight-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:480px){.insight-grid{grid-template-columns:1fr;}}
+.insight-card{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:16px 18px;display:flex;flex-direction:column;gap:8px;
+}
+.insight-label{font-size:10px;color:var(--muted);letter-spacing:1px;font-weight:700;text-transform:uppercase;}
+.insight-value{font-family:'Nanum Gothic',sans-serif;font-weight:900;font-size:28px;line-height:1;}
+.insight-value.up{color:var(--up);}
+.insight-value.dn{color:var(--dn);}
+.insight-value.warn{color:#f59e0b;}
+.insight-value.neu{color:var(--text);}
+.insight-comment{
+  font-size:12px;line-height:1.6;padding:8px 10px;border-radius:6px;
+  background:rgba(255,255,255,0.04);color:var(--text);word-break:keep-all;
+}
+.insight-comment.bull{border-left:3px solid var(--up);}
+.insight-comment.bear{border-left:3px solid var(--dn);}
+.insight-comment.warn{border-left:3px solid #f59e0b;}
+.insight-comment.neu{border-left:3px solid var(--muted);}
 </style>
 </head>
 <body>
@@ -194,14 +217,22 @@ html,body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans
     <div class="section-heading">📊 매크로 지수</div>
     <div class="macro-grid col1" id="macro-macro"></div>
 
+    <!-- ② 인사이트 4개 -->
+    <div class="section-heading" style="margin-top:20px;">🧭 시장 온도계</div>
+    <div class="insight-grid" id="insight-grid"></div>
+
     <div class="section-heading" style="margin-top:20px;">🌍 각국 증시</div>
     <div class="macro-grid col1" id="macro-index"></div>
 
     <div class="section-heading" style="margin-top:20px;">💱 달러 대비 환율</div>
     <div class="macro-grid col1" id="macro-fx"></div>
 
+    <!-- ③ 섹터 ETF 비교 -->
+    <div class="section-heading" style="margin-top:20px;">🗂 섹터 ETF 비교</div>
+    <div class="macro-grid col1" id="sector-etf-wrap"></div>
+
     <hr class="section-divider">
-    <div class="section-heading">🗂 섹터별 주가 흐름</div>
+    <div class="section-heading">📈 섹터별 종목 흐름</div>
   </div>
 
   <div class="sector-grid" id="sector-grid" style="display:none;"></div>
@@ -245,6 +276,24 @@ const MACRO_GROUPS = [
 
 // 매크로 전체 심볼 목록 (히스토리 fetch용)
 const MACRO_SYMS = MACRO_GROUPS.flatMap(g => g.items.map(i => i.sym));
+
+// 섹터 ETF 비교
+const SECTOR_ETF_ITEMS = [
+  { sym:'XLK',  label:'IT' },
+  { sym:'XLC',  label:'통신' },
+  { sym:'XLY',  label:'임의소비재' },
+  { sym:'XLF',  label:'금융' },
+  { sym:'XLV',  label:'헬스케어' },
+  { sym:'XLI',  label:'산업재' },
+  { sym:'XLE',  label:'에너지' },
+  { sym:'XLP',  label:'필수소비재' },
+  { sym:'XLU',  label:'유틸리티' },
+  { sym:'XLB',  label:'소재' },
+  { sym:'XLRE', label:'부동산' },
+];
+
+// 인사이트 심볼
+const INSIGHT_SYMS = ['^VIX', '^TNX', 'HYG', '^VXV'];
 
 const SECTORS = [
   { name:'AI 칩', syms:['NVDA','AMD','AVGO','ARM','MRVL'] },
@@ -294,26 +343,30 @@ async function loadAll() {
   document.getElementById('sector-grid').style.display = 'none';
   document.getElementById('sector-grid').innerHTML = '';
 
-  // ① 매크로 먼저 (19종목, 빠름)
-  await fetchBatch(MACRO_SYMS);
+  // ① 매크로 + 인사이트 + 섹터ETF 먼저
+  const firstBatch = [...new Set([...MACRO_SYMS, ...INSIGHT_SYMS, ...SECTOR_ETF_ITEMS.map(i=>i.sym)])];
+  await fetchBatch(firstBatch);
+
   renderMacroSection();
+  renderInsights();
+  renderSectorETF();
+
   document.getElementById('global-loading').style.display = 'none';
   document.getElementById('macro-wrap').style.display = 'block';
   document.getElementById('last-update').textContent =
     '업데이트: ' + new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'});
 
-  // ② 섹터 순차 로드 (배치마다 카드 추가)
+  // ② 섹터 종목 순차 로드
   document.getElementById('sector-grid').style.display = 'grid';
   const sectorSyms = [...new Set(SECTORS.flatMap(s => s.syms))];
   const BATCH = 20;
   for(let i = 0; i < sectorSyms.length; i += BATCH){
     await fetchBatch(sectorSyms.slice(i, i + BATCH));
-    // 이미 데이터 있는 섹터 카드 추가
     const loaded = new Set(Object.keys(priceCache).filter(k => priceCache[k]));
     const grid = document.getElementById('sector-grid');
     SECTORS.forEach(sector => {
       const id = 'sc-' + sector.name;
-      if(document.getElementById(id)) return; // 이미 있으면 스킵
+      if(document.getElementById(id)) return;
       if(sector.syms.some(s => loaded.has(s))){
         const card = makeSectorCard(sector);
         card.id = id;
@@ -321,8 +374,6 @@ async function loadAll() {
       }
     });
   }
-
-  // 혹시 빠진 카드 마저 추가
   const grid = document.getElementById('sector-grid');
   SECTORS.forEach(sector => {
     const id = 'sc-' + sector.name;
@@ -335,8 +386,145 @@ async function loadAll() {
 }
 
 /* ════════════════════════════
-   매크로 섹션 렌더 (라인차트)
+   인사이트 카드 4개
 ════════════════════════════ */
+function renderInsights(){
+  const el = document.getElementById('insight-grid');
+  if(!el) return;
+
+  const getLastPrice = sym => {
+    const d = priceCache[sym];
+    if(!d || !d.length) return null;
+    return d[d.length-1].c;
+  };
+
+  const vix  = getLastPrice('^VIX');
+  const tnx  = getLastPrice('^TNX');
+  const hyg  = getLastPrice('HYG');
+  const vxv  = getLastPrice('^VXV');
+
+  // VIX 기반 공포탐욕
+  const fgScore = vix ? Math.max(0, Math.min(100, Math.round(100 - (vix - 10) * 2.5))) : null;
+  const fgCls = fgScore === null ? 'neu' : fgScore >= 60 ? 'up' : fgScore >= 40 ? 'warn' : 'dn';
+  const fgLabel = fgScore === null ? '-' : fgScore >= 75 ? '극단적 탐욕' : fgScore >= 55 ? '탐욕' : fgScore >= 45 ? '중립' : fgScore >= 25 ? '공포' : '극단적 공포';
+  const fgComment = fgScore === null ? '데이터 없음' :
+    fgScore >= 75 ? '시장이 과열 상태. 단기 조정 가능성 높음. 신규 진입 신중히.' :
+    fgScore >= 55 ? '낙관이 우세한 구간. 추세 유효하나 리스크 관리 필요.' :
+    fgScore >= 45 ? '방향성 불명확. 관망하며 다음 신호 대기.' :
+    fgScore >= 25 ? '공포 우세. 역발상 매수 기회 탐색 시작할 시점.' :
+    '극단적 공포. 역사적으로 강력한 매수 기회. 분할 매수 고려.';
+
+  // 10년물 금리
+  const tnxCls = tnx === null ? 'neu' : tnx >= 4.5 ? 'dn' : tnx >= 3.5 ? 'warn' : 'up';
+  const tnxComment = tnx === null ? '데이터 없음' :
+    tnx >= 5.0 ? '고금리 지속. 주식 밸류에이션 압박. 채권 매력도 상승.' :
+    tnx >= 4.5 ? '금리 부담 구간. 성장주·부동산 취약. 방어주 유리.' :
+    tnx >= 3.5 ? '중립 구간. 경기 방향에 따라 움직임 주시.' :
+    '저금리 구간. 위험자산 선호 환경. 성장주·신흥국 유리.';
+
+  // HYG (하이일드 ETF - 낮을수록 스프레드 확대 = 위험)
+  const hygRef = 78; // 대략적인 정상 기준
+  const hygCls = hyg === null ? 'neu' : hyg >= hygRef ? 'up' : hyg >= hygRef - 3 ? 'warn' : 'dn';
+  const hygComment = hyg === null ? '데이터 없음' :
+    hyg >= hygRef + 2 ? '하이일드 강세. 신용위험 낮음. 위험선호 환경.' :
+    hyg >= hygRef - 1 ? '하이일드 안정. 신용시장 정상 범위.' :
+    hyg >= hygRef - 4 ? '스프레드 확대 중. 신용위험 상승 신호. 주의.' :
+    '하이일드 약세. 신용경색 우려. 안전자산 선호로 전환 고려.';
+
+  // VIX/VXV 비율 (PCR 대체)
+  const pcr = (vix && vxv) ? (vix / vxv) : null;
+  const pcrCls = pcr === null ? 'neu' : pcr >= 1.0 ? 'dn' : pcr >= 0.85 ? 'warn' : 'up';
+  const pcrComment = pcr === null ? '데이터 없음' :
+    pcr >= 1.0 ? '단기 변동성이 장기보다 높음. 급격한 공포. 반등 가능성.' :
+    pcr >= 0.9 ? '불안감 고조. 단기 조정 경계. 포지션 축소 검토.' :
+    pcr >= 0.8 ? '정상 범위. 시장 안정적.' :
+    '낙관 과잉. 단기 변동성 급등 주의.';
+
+  el.innerHTML = `
+    <div class="insight-card">
+      <div class="insight-label">공포·탐욕 지수 (VIX 기반)</div>
+      <div class="insight-value ${fgCls}">${fgScore ?? '-'} <span style="font-size:14px;font-weight:400">${fgLabel}</span></div>
+      <div class="insight-comment ${fgCls === 'up' ? 'bull' : fgCls === 'dn' ? 'bear' : fgCls}">${fgComment}</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-label">미국 10년물 금리</div>
+      <div class="insight-value ${tnxCls}">${tnx ? tnx.toFixed(2) + '%' : '-'}</div>
+      <div class="insight-comment ${tnxCls === 'up' ? 'bull' : tnxCls === 'dn' ? 'bear' : 'warn'}">${tnxComment}</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-label">하이일드 채권 (HYG)</div>
+      <div class="insight-value ${hygCls}">${hyg ? '$' + hyg.toFixed(2) : '-'}</div>
+      <div class="insight-comment ${hygCls === 'up' ? 'bull' : hygCls === 'dn' ? 'bear' : 'warn'}">${hygComment}</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-label">변동성 비율 (VIX/VXV)</div>
+      <div class="insight-value ${pcrCls}">${pcr ? pcr.toFixed(2) : '-'}</div>
+      <div class="insight-comment ${pcrCls === 'up' ? 'bull' : pcrCls === 'dn' ? 'bear' : 'warn'}">${pcrComment}</div>
+    </div>
+  `;
+}
+
+/* ════════════════════════════
+   섹터 ETF 비교 차트
+════════════════════════════ */
+function renderSectorETF(){
+  const el = document.getElementById('sector-etf-wrap');
+  if(!el) return;
+  el.innerHTML = '';
+
+  const normalizedData = {};
+  SECTOR_ETF_ITEMS.forEach(item => {
+    const raw = priceCache[item.sym];
+    if(!raw || raw.length < 2) return;
+    const base = raw[0].c;
+    if(!base) return;
+    normalizedData[item.sym] = raw.map(p => ({ d: p.d, v: Math.round(p.c / base * 10000) / 100 }));
+  });
+
+  const card = document.createElement('div');
+  card.className = 'macro-card';
+
+  const syms = SECTOR_ETF_ITEMS.map(i => i.sym);
+  const labelMap = {};
+  SECTOR_ETF_ITEMS.forEach(i => labelMap[i.sym] = i.label);
+
+  // 헤더
+  const hdr = document.createElement('div');
+  hdr.className = 'macro-card-header';
+  hdr.innerHTML = `<span class="macro-card-title">11개 섹터 ETF 비교</span><span class="macro-card-meta">${currentPeriod}일 · 기준=100</span>`;
+  card.appendChild(hdr);
+
+  // 범례
+  const legend = document.createElement('div');
+  legend.className = 'macro-card-legend';
+  SECTOR_ETF_ITEMS.forEach((item, i) => {
+    const nd = normalizedData[item.sym];
+    const last = nd && nd.length ? nd[nd.length-1].v : null;
+    const chg = last ? (last - 100).toFixed(1) : null;
+    const cls = chg === null ? 'neu' : parseFloat(chg) > 0 ? 'up' : 'dn';
+    const chgStr = chg === null ? '-' : (parseFloat(chg)>0?'+':'') + chg + '%';
+    legend.innerHTML += `<div class="macro-legend-item">
+      <div class="macro-legend-dot" style="background:${COLORS[i % COLORS.length]}"></div>
+      <span class="macro-legend-sym">${item.label}</span>
+      <span class="macro-legend-chg ${cls}">${chgStr}</span>
+    </div>`;
+  });
+  card.appendChild(legend);
+
+  // 차트
+  const chartWrap = document.createElement('div');
+  chartWrap.className = 'macro-card-chart';
+  chartWrap.innerHTML = '<span class="macro-base-label">기준=100</span>';
+  const canvas = document.createElement('canvas');
+  canvas.className = 'macro-chart-canvas';
+  chartWrap.appendChild(canvas);
+  card.appendChild(chartWrap);
+  el.appendChild(card);
+
+  requestAnimationFrame(() => {
+    drawLineChart(canvas, syms, normalizedData, { H:240, labelMap });
+  });
+}
 function renderMacroSection(){
   MACRO_GROUPS.forEach(group => {
     const el = document.getElementById(group.id);
