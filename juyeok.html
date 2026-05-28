@@ -2,678 +2,533 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>주역점 | 점쟁이 회계사</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>주역 동전점</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&family=Black+Han+Sans&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-html,body{width:100%;height:100%;background:#03040a;color:#fff;font-family:'Noto Serif KR',serif;overflow:hidden;}
+:root{
+  --ink:#1a1410;
+  --paper:#f0e6d2;
+  --paper2:#e6d8bd;
+  --gold:#a8842c;
+  --red:#9c2b2b;
+  --line:#3a2f24;
+  --dim:#6b5d49;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Gowun Batang',serif;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(168,132,44,.10), transparent 40%),
+    radial-gradient(circle at 80% 90%, rgba(156,43,43,.08), transparent 45%),
+    #14100b;
+  color:var(--paper);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  padding:24px 16px 60px;
+}
+.wrap{width:100%;max-width:560px}
 
-/* ── 별 배경 ── */
-#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
-
-/* ── 화면 전환 오버레이 ── */
-#transition-overlay{
-  position:fixed;inset:0;z-index:999;pointer-events:none;
-  background:radial-gradient(circle at 50% 50%, rgba(200,168,110,0.15), #03040a);
-  opacity:0;
+/* 헤더 */
+header{text-align:center;margin-bottom:28px;position:relative}
+header .sub{
+  font-family:'Gowun Dodum',sans-serif;
+  color:var(--gold);
+  letter-spacing:.5em;
+  font-size:11px;
+  margin-bottom:10px;
+}
+header h1{
+  font-family:'Black Han Sans',sans-serif;
+  font-size:46px;
+  letter-spacing:.08em;
+  background:linear-gradient(180deg,#f0e6d2,#c9a84f);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  line-height:1;
+}
+header .deco{
+  width:60px;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  margin:14px auto 0;
 }
 
-/* ── 공통 스크린 ── */
-.screen{
-  position:fixed;inset:0;z-index:10;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:24px;
-  opacity:0;pointer-events:none;
-  transition:opacity 0.45s ease;
-  overflow-y:auto;
+/* 단계 안내 */
+.stage{
+  text-align:center;
+  font-family:'Gowun Dodum',sans-serif;
+  font-size:13px;
+  color:var(--dim);
+  margin-bottom:18px;
+  min-height:18px;
 }
-.screen.active{opacity:1;pointer-events:all;}
 
-/* ── 상단 바 ── */
-.topbar{
-  position:fixed;top:0;left:0;right:0;z-index:100;
-  padding:14px 20px;display:flex;align-items:center;justify-content:space-between;
-  background:linear-gradient(to bottom,rgba(3,4,10,0.95),transparent);
+/* 효 쌓이는 영역 (아래에서 위로) */
+.lines-box{
+  background:linear-gradient(180deg,rgba(240,230,210,.04),rgba(240,230,210,.01));
+  border:1px solid rgba(168,132,44,.25);
+  border-radius:14px;
+  padding:22px 20px;
+  margin-bottom:22px;
+  min-height:260px;
+  display:flex;
+  flex-direction:column-reverse;
+  justify-content:flex-start;
+  gap:14px;
 }
-.logo{font-family:'Nanum Gothic',sans-serif;font-weight:800;font-size:12px;letter-spacing:2px;color:#c8a86e;text-decoration:none;}
-.back-btn{font-family:'Nanum Gothic',sans-serif;font-size:11px;color:rgba(200,168,110,0.7);background:none;border:1px solid rgba(200,168,110,0.25);padding:4px 10px;border-radius:3px;cursor:pointer;transition:all 0.2s;text-decoration:none;}
-.back-btn:hover{color:#c8a86e;border-color:rgba(200,168,110,0.6);}
+.line-row{
+  display:flex;align-items:center;gap:14px;
+  opacity:0;transform:translateY(12px);
+  animation:rise .5s ease forwards;
+}
+@keyframes rise{to{opacity:1;transform:none}}
+.line-no{
+  font-family:'Gowun Dodum',sans-serif;
+  font-size:11px;color:var(--dim);width:34px;flex-shrink:0;
+}
+.yao{display:flex;gap:10px;flex:1;height:16px}
+.yao .seg{flex:1;background:var(--paper);border-radius:2px}
+.yao.yin{gap:18px}
+.yao.yin .seg{flex:1}
+.yao.solid .seg{flex:1}
+.moving{
+  font-family:'Gowun Dodum',sans-serif;
+  font-size:11px;width:38px;flex-shrink:0;text-align:right;
+}
+.moving .dot{color:var(--red);font-weight:700}
+.moving .o{color:var(--gold);font-weight:700}
 
-/* ── SCREEN 1: 모드 선택 ── */
-#s-mode .title{
-  font-family:'Nanum Gothic',sans-serif;font-weight:800;
-  font-size:clamp(28px,8vw,44px);color:#c8a86e;letter-spacing:6px;
-  text-shadow:0 0 30px rgba(200,168,110,0.5);margin-bottom:8px;text-align:center;
+/* 동전 */
+.coins{
+  display:flex;justify-content:center;gap:18px;margin-bottom:22px;height:72px;align-items:center;
 }
-#s-mode .subtitle{font-size:13px;color:rgba(255,255,255,0.45);letter-spacing:3px;margin-bottom:40px;text-align:center;}
-.mode-cards{display:flex;flex-direction:column;gap:14px;width:100%;max-width:320px;}
-.mode-card{
-  background:rgba(255,255,255,0.03);border:1px solid rgba(200,168,110,0.2);
-  border-radius:8px;padding:20px 24px;cursor:pointer;transition:all 0.3s;
-  display:flex;align-items:center;gap:16px;
-}
-.mode-card:hover{background:rgba(200,168,110,0.09);border-color:rgba(200,168,110,0.6);transform:translateX(6px);}
-.mode-card-icon{font-size:26px;flex-shrink:0;}
-.mode-card-label{font-family:'Nanum Gothic',sans-serif;font-weight:800;font-size:16px;color:#fff;}
-.mode-card-sub{font-size:10px;color:rgba(200,168,110,0.45);margin-top:3px;letter-spacing:1px;}
-
-/* ── SCREEN 2: 동전 던지기 ── */
-#s-coin{gap:0;justify-content:center;}
-.mode-badge{font-family:'Nanum Gothic',sans-serif;font-weight:800;font-size:13px;color:#c8a86e;letter-spacing:2px;margin-bottom:16px;text-align:center;}
-.coin-area{
-  width:180px;height:180px;position:relative;cursor:pointer;margin-bottom:24px;
+.coin{
+  width:62px;height:62px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#d8b860,#9c7a22 70%,#6b5212);
+  border:2px solid #4a3a14;
   display:flex;align-items:center;justify-content:center;
+  font-family:'Black Han Sans',sans-serif;
+  font-size:20px;color:#2a2008;
+  box-shadow:0 6px 14px rgba(0,0,0,.45),inset 0 2px 4px rgba(255,255,255,.3);
 }
-.coin-area:hover .coin-idle{filter:brightness(1.15);}
-#coin-canvas{display:block;}
-.throw-hint{font-size:13px;color:rgba(255,255,255,0.5);letter-spacing:2px;margin-bottom:28px;text-align:center;min-height:20px;}
+.coin.flip{animation:flip .6s ease}
+@keyframes flip{
+  0%{transform:rotateY(0)}
+  50%{transform:rotateY(900deg) scale(1.1)}
+  100%{transform:rotateY(1800deg)}
+}
 
-/* 효선 쌓기 */
-.yao-stack{display:flex;flex-direction:column-reverse;align-items:center;gap:8px;margin-bottom:20px;min-height:160px;}
-.yao-row{display:flex;align-items:center;gap:4px;opacity:0;transform:translateY(10px);transition:opacity 0.4s,transform 0.4s;}
-.yao-row.show{opacity:1;transform:translateY(0);}
-.yao-num{font-size:10px;color:rgba(200,168,110,0.4);width:14px;text-align:right;font-family:'Nanum Gothic',sans-serif;}
-.yao-yang{width:80px;height:10px;background:linear-gradient(90deg,#c8a86e,#f0d090,#c8a86e);border-radius:2px;box-shadow:0 0 8px rgba(200,168,110,0.4);}
-.yao-yin-wrap{display:flex;gap:8px;}
-.yao-yin-half{width:35px;height:10px;background:linear-gradient(90deg,#c8a86e,#f0d090,#c8a86e);border-radius:2px;box-shadow:0 0 8px rgba(200,168,110,0.4);}
-.coin-guide{
-  font-family:'Noto Serif KR',serif;font-weight:600;
-  font-size:clamp(15px,4vw,20px);color:#ffffff;
-  text-align:center;letter-spacing:1px;line-height:1.8;
-  margin-bottom:18px;padding:0 12px;
-  text-shadow:0 2px 12px rgba(0,0,0,0.6);
+/* 버튼 */
+.btns{display:flex;flex-direction:column;gap:12px;align-items:center}
+button{
+  font-family:'Black Han Sans',sans-serif;
+  cursor:pointer;border:none;letter-spacing:.05em;
+  transition:transform .15s,box-shadow .15s,opacity .2s;
 }
-.throw-count{font-size:11px;color:rgba(200,168,110,0.5);letter-spacing:2px;text-align:center;}
+button:active{transform:scale(.97)}
+.btn-throw{
+  width:100%;max-width:340px;padding:18px;
+  font-size:20px;border-radius:12px;
+  background:linear-gradient(180deg,#b23535,#7c2020);
+  color:var(--paper);
+  box-shadow:0 6px 0 #5a1616,0 8px 16px rgba(0,0,0,.4);
+}
+.btn-throw:active{box-shadow:0 2px 0 #5a1616;transform:translateY(4px)}
+.btn-throw:disabled{opacity:.35;box-shadow:none;cursor:default}
+.btn-reset{
+  background:none;color:var(--dim);
+  font-family:'Gowun Dodum',sans-serif;
+  font-size:12px;text-decoration:underline;padding:6px;
+}
 
-/* ── 괘 완성 중간 화면 ── */
-#s-gua{text-align:center;}
-.gua-name-big{font-family:'Nanum Gothic',sans-serif;font-weight:800;font-size:clamp(22px,6vw,34px);color:#c8a86e;margin-bottom:8px;text-shadow:0 0 20px rgba(200,168,110,0.5);}
-.gua-num{font-size:11px;color:rgba(200,168,110,0.4);letter-spacing:3px;margin-bottom:28px;}
-.gua-symbol-big{display:flex;flex-direction:column-reverse;align-items:center;gap:10px;margin-bottom:32px;}
-.gua-yang-big{width:90px;height:12px;background:linear-gradient(90deg,#c8a86e,#f0d090,#c8a86e);border-radius:2px;box-shadow:0 0 10px rgba(200,168,110,0.5);}
-.gua-yin-big{display:flex;gap:10px;}
-.gua-yin-half-big{width:38px;height:12px;background:linear-gradient(90deg,#c8a86e,#f0d090,#c8a86e);border-radius:2px;box-shadow:0 0 10px rgba(200,168,110,0.5);}
-.gua-reveal-btn{
-  font-family:'Nanum Gothic',sans-serif;font-weight:800;font-size:14px;
-  background:rgba(200,168,110,0.1);border:1px solid rgba(200,168,110,0.4);
-  color:#c8a86e;padding:14px 36px;border-radius:4px;cursor:pointer;
-  transition:all 0.25s;letter-spacing:2px;
+/* 결과 */
+.result{margin-top:32px;display:none}
+.result.show{display:block;animation:rise .6s ease}
+.hexa-pair{display:flex;gap:14px;margin-bottom:24px}
+.hexa-card{
+  flex:1;text-align:center;
+  background:linear-gradient(180deg,rgba(240,230,210,.06),rgba(240,230,210,.02));
+  border:1px solid rgba(168,132,44,.3);
+  border-radius:14px;padding:18px 12px;
 }
-.gua-reveal-btn:hover{background:rgba(200,168,110,0.2);border-color:#c8a86e;}
+.hexa-card .label{
+  font-family:'Gowun Dodum',sans-serif;font-size:11px;
+  color:var(--gold);letter-spacing:.3em;margin-bottom:10px;
+}
+.hexa-card .symbol{font-size:38px;line-height:1.1;color:var(--paper)}
+.hexa-card .hname{
+  font-family:'Gowun Batang',serif;font-weight:700;
+  font-size:17px;margin-top:8px;
+}
+.hexa-card .hnum{
+  font-family:'Gowun Dodum',sans-serif;font-size:11px;color:var(--dim);margin-top:2px;
+}
+.arrow{align-self:center;color:var(--gold);font-size:22px}
 
-/* ── SCREEN 4: 해석 ── */
-#s-result{padding-top:80px;padding-bottom:40px;justify-content:flex-start;}
-.result-inner{width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center;gap:20px;}
-.result-gua-symbol{display:flex;flex-direction:column-reverse;align-items:center;gap:8px;margin-bottom:4px;}
-.result-yang{width:72px;height:9px;background:linear-gradient(90deg,#c8a86e,#f0d090,#c8a86e);border-radius:2px;}
-.result-yin{display:flex;gap:7px;}
-.result-yin-half{width:30px;height:9px;background:linear-gradient(90deg,#c8a86e,#f0d090,#c8a86e);border-radius:2px;}
-.result-gua-name{font-family:'Nanum Gothic',sans-serif;font-weight:800;font-size:22px;color:#c8a86e;letter-spacing:2px;}
-.result-gua-num{font-size:10px;color:rgba(200,168,110,0.4);letter-spacing:3px;margin-top:2px;}
-.result-divider{width:100%;height:1px;background:linear-gradient(to right,transparent,rgba(200,168,110,0.35),transparent);}
-.result-card{
-  width:100%;background:rgba(255,255,255,0.03);
-  border:1px solid rgba(200,168,110,0.15);border-radius:8px;padding:22px 20px;
+.section{
+  border-top:1px solid rgba(168,132,44,.2);
+  padding-top:18px;margin-top:18px;
 }
-.result-card-label{font-family:'Nanum Gothic',sans-serif;font-size:9px;letter-spacing:3px;color:rgba(200,168,110,0.5);margin-bottom:12px;text-transform:uppercase;}
-.result-oneline{font-family:'Noto Serif KR',serif;font-size:15px;color:rgba(255,255,255,0.75);line-height:1.8;margin-bottom:16px;}
-.result-main{font-family:'Noto Serif KR',serif;font-weight:700;font-size:17px;color:#ffffff;line-height:1.9;word-break:keep-all;white-space:pre-line;}
-.result-stock-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
-.result-stock-tag{
-  font-family:'Nanum Gothic',sans-serif;font-weight:800;font-size:13px;
-  background:rgba(200,168,110,0.12);border:1px solid rgba(200,168,110,0.35);
-  color:#f0d090;padding:5px 12px;border-radius:4px;
+.section h3{
+  font-family:'Black Han Sans',sans-serif;
+  font-size:16px;color:var(--gold);margin-bottom:10px;letter-spacing:.05em;
 }
-.again-btn{
-  font-family:'Noto Serif KR',serif;font-weight:700;font-size:13px;
-  background:none;border:1px solid rgba(200,168,110,0.35);
-  color:rgba(200,168,110,0.8);padding:12px 32px;border-radius:4px;
-  cursor:pointer;transition:all 0.2s;letter-spacing:2px;margin-top:8px;
+.section .body{
+  font-family:'Gowun Batang',serif;font-size:15px;line-height:1.85;color:var(--paper);
 }
-.again-btn:hover{border-color:#c8a86e;background:rgba(200,168,110,0.08);}
-.home-btn{
-  font-family:'Noto Serif KR',serif;font-weight:400;font-size:12px;
-  color:rgba(255,255,255,0.35);letter-spacing:2px;text-decoration:none;
-  margin-top:4px;padding:8px;transition:color 0.2s;
+.yao-item{margin-bottom:14px}
+.yao-item .yt{
+  font-family:'Gowun Dodum',sans-serif;font-size:12px;color:var(--red);
+  font-weight:700;margin-bottom:3px;
 }
-.home-btn:hover{color:rgba(255,255,255,0.7);}
-
-/* ── 파티클 오버레이 ── */
-#particle-canvas{position:fixed;inset:0;z-index:50;pointer-events:none;}
+.empty-note{
+  font-family:'Gowun Dodum',sans-serif;font-size:12px;color:var(--dim);
+  font-style:italic;
+}
+footer{
+  text-align:center;margin-top:40px;
+  font-family:'Gowun Dodum',sans-serif;font-size:10px;color:var(--dim);letter-spacing:.1em;
+}
 </style>
 </head>
 <body>
-<canvas id="bg-canvas"></canvas>
-<canvas id="particle-canvas"></canvas>
-<div id="transition-overlay"></div>
+<div class="wrap">
+  <header>
+    <div class="sub">周 易 占</div>
+    <h1>주역 동전점</h1>
+    <div class="deco"></div>
+  </header>
 
-<div class="topbar">
-  <a class="logo" href="index.html">점쟁이회계사</a>
-  <a class="back-btn" href="index.html">← 홈</a>
-</div>
+  <div class="stage" id="stage">동전 3개를 6번 던져 괘를 세웁니다</div>
 
-<!-- S1: 모드 선택 -->
-<div class="screen active" id="s-mode">
-  <div class="title">周易</div>
-  <div class="subtitle">동전을 던져 괘를 뽑으세요</div>
-  <div class="mode-cards">
-    <div class="mode-card" onclick="selectMode('advice')">
-      <span class="mode-card-icon">🔮</span>
-      <div>
-        <div class="mode-card-label">현 상황 조언 듣기</div>
-        <div class="mode-card-sub">LIFE GUIDANCE</div>
-      </div>
-    </div>
-    <div class="mode-card" onclick="selectMode('stock')">
-      <span class="mode-card-icon">📈</span>
-      <div>
-        <div class="mode-card-label">국내 주식 추천 받기</div>
-        <div class="mode-card-sub">STOCK RECOMMENDATION</div>
-      </div>
-    </div>
+  <div class="lines-box" id="linesBox"></div>
+
+  <div class="coins" id="coins">
+    <div class="coin">乾</div>
+    <div class="coin">坤</div>
+    <div class="coin">易</div>
   </div>
-</div>
 
-<!-- S2: 동전 던지기 -->
-<div class="screen" id="s-coin">
-  <div class="mode-badge" id="mode-badge"></div>
-  <div class="coin-guide">마음을 가라앉히고<br>동전을 6번 클릭하세요</div>
-  <div class="yao-stack" id="yao-stack"></div>
-  <div class="coin-area" id="coin-area" onclick="throwCoin()">
-    <canvas id="coin-canvas" width="160" height="160"></canvas>
+  <div class="btns">
+    <button class="btn-throw" id="throwBtn">동전 던지기 (1/6)</button>
+    <button class="btn-reset" id="resetBtn" style="display:none">처음부터 다시</button>
   </div>
-  <div class="throw-hint" id="throw-hint">동전을 클릭해서 던지세요</div>
-  <div class="throw-count" id="throw-count"></div>
-</div>
 
-<!-- S3: 괘 완성 -->
-<div class="screen" id="s-gua">
-  <div class="gua-num" id="gua-num-label"></div>
-  <div class="gua-name-big" id="gua-name-label"></div>
-  <div class="gua-symbol-big" id="gua-symbol-big"></div>
-  <button class="gua-reveal-btn" onclick="showResult()">해석 보기 →</button>
-</div>
+  <div class="result" id="result"></div>
 
-<!-- S4: 해석 -->
-<div class="screen" id="s-result">
-  <div class="result-inner">
-    <div class="result-gua-symbol" id="result-symbol"></div>
-    <div class="result-gua-name" id="result-name"></div>
-    <div class="result-gua-num" id="result-num"></div>
-    <div class="result-divider"></div>
-    <div class="result-card" id="result-card">
-      <div class="result-card-label" id="result-label"></div>
-      <div class="result-oneline" id="result-oneline"></div>
-      <div class="result-main" id="result-main"></div>
-      <div class="result-stock-wrap" id="result-stocks"></div>
-    </div>
-    <a class="home-btn" href="https://fortunecpa.co.kr/">← 홈으로 돌아가기</a>
-  </div>
+  <footer>占 · FORTUNE TELLER CPA</footer>
 </div>
 
 <script>
-/* ── 64괘 데이터 ── */
-const HEXAGRAMS=[
-  {n:1,name:'중천건',yao:['양','양','양','양','양','양'],oneline:'창조와 실행, 가진 패로 만들어낸다',stock:'반도체주',situation:'재능과 자원은 다 갖춰졌고 신호도 왔다',advice:'머뭇대지 말고 지금 첫 수를 둬'},
-  {n:2,name:'중지곤',yao:['음','음','음','음','음','음'],oneline:'직관과 숨겨진 진실, 침묵의 지혜',stock:'바이오주',situation:'겉으로 안 드러난 흐름이 물밑에서 움직인다',advice:'성급히 답하지 말고 직감을 믿어'},
-  {n:3,name:'수뢰둔',yao:['양','음','음','음','양','음'],oneline:'풍요와 결실, 키워낸 만큼 돌려받는다',stock:'농업·비료주',situation:'정성 들인 일에 열매가 맺히는 시기',advice:'조급해 말고 보살피며 키워가'},
-  {n:4,name:'산수몽',yao:['음','양','음','음','음','양'],oneline:'권위와 질서, 구조로 세상을 잡는다',stock:'방위산업주',situation:'네가 룰을 정해야 흐름이 잡힌다',advice:'원칙 세우고 단단하게 밀어붙여'},
-  {n:5,name:'수천수',yao:['양','양','양','음','양','음'],oneline:'전통과 검증된 길, 안정의 가르침',stock:'음식료주',situation:'이미 검증된 길에 답이 있다',advice:'튀는 선택보다 정석을 따라가'},
-  {n:6,name:'천수송',yao:['음','양','음','양','양','양'],oneline:'선택과 결합, 마음이 갈리는 자리',stock:'유통·백화점주',situation:'두 갈래 길 앞, 결정을 미루고 있다',advice:'양다리 말고 하나만 골라'},
-  {n:7,name:'지수사',yao:['음','양','음','음','음','음'],oneline:'전진과 돌파, 속도가 승부를 가른다',stock:'자동차주',situation:'흐름은 네 편, 망설일 때 아니다',advice:'지금 속도 그대로 밀어붙여'},
-  {n:8,name:'수지비',yao:['음','음','음','음','양','음'],oneline:'내면의 힘, 부드러움이 사나움을 다스린다',stock:'정유·에너지주',situation:'겉은 약해 보여도 안에 단단한 용기 있다',advice:'겁먹지 말고 부드럽게 정면돌파'},
-  {n:9,name:'풍천소축',yao:['양','양','양','음','양','양'],oneline:'고독과 성찰, 자기 안으로 들어가는 시간',stock:'리츠·인프라주',situation:'지금은 군중에서 한 발 물러설 때',advice:'혼자 시간 갖고 너를 먼저 봐'},
-  {n:10,name:'천택리',yao:['양','양','음','양','양','양'],oneline:'순환과 전환, 흐름이 한 바퀴 돈다',stock:'철강·소재주',situation:'운의 방향이 바뀌는 변곡점에 서 있다',advice:'흐름 읽고 갈아탈 준비 해'},
-  {n:11,name:'지천태',yao:['양','양','양','음','음','음'],oneline:'공정과 인과, 뿌린 만큼 거둔다',stock:'은행·금융주',situation:'지금까지의 행동이 그대로 돌아온다',advice:'편법 쓰지 말고 원칙대로 가'},
-  {n:12,name:'천지비',yao:['음','음','음','양','양','양'],oneline:'정지와 인내, 매달려서 시야를 바꾼다',stock:'전력·유틸리티주',situation:'움직임이 막혀 답답하지만 때가 있다',advice:'버티는 것도 전략, 조금만 더 견뎌'},
-  {n:13,name:'천화동인',yao:['양','음','양','양','양','양'],oneline:'끝과 재탄생, 닫아야 새 문이 열린다',stock:'구조조정·턴어라운드주',situation:'이미 끝난 챕터를 붙잡고 있다',advice:'미련 버리고 깨끗하게 마무리해'},
-  {n:14,name:'화천대유',yao:['양','양','양','양','음','양'],oneline:'중용과 균형, 양극 사이를 잇는 손',stock:'지주회사주',situation:'어느 한쪽으로도 치우치지 않을 자리',advice:'과하지도 모자라지도 않게 가운데로'},
-  {n:15,name:'지산겸',yao:['음','음','양','음','음','음'],oneline:'유혹과 집착, 사슬은 스스로 풀 수 있다',stock:'카지노·레저주',situation:'달콤한 만큼 무거운 사슬에 묶여 있다',advice:'이건 욕심이야, 한 발 빼'},
-  {n:16,name:'뇌지예',yao:['음','음','음','양','음','음'],oneline:'붕괴와 충격, 거짓 위에 쌓은 것이 무너진다',stock:'가스·지역난방주',situation:'환상이 깨지는 순간이 다가온다',advice:'지금 멈춰, 미루면 더 크게 무너져'},
-  {n:17,name:'택뢰수',yao:['양','음','음','양','양','음'],oneline:'희망과 치유, 어둠 뒤 비치는 별빛',stock:'신재생에너지·태양광주',situation:'긴 터널의 끝, 빛이 보이기 시작한다',advice:'지금까지 잘 왔어, 계속 가'},
-  {n:18,name:'산풍고',yao:['음','양','양','음','음','양'],oneline:'무의식과 환영, 보이는 게 다가 아니다',stock:'비철·귀금속주',situation:'안개 속에 진실이 가려져 있다',advice:'보이는 것 다 믿지 마, 의심해'},
-  {n:19,name:'지택림',yao:['양','양','음','음','음','음'],oneline:'성공과 생명력, 한낮의 환한 에너지',stock:'플랫폼·인터넷주',situation:'모든 게 밝게 드러나고 잘 풀린다',advice:'당당하게 나아가, 성과는 네 것'},
-  {n:20,name:'풍지관',yao:['음','음','음','음','양','양'],oneline:'각성과 부활, 부름에 응답할 때',stock:'암호화폐·블록체인주',situation:'지난 일이 다시 너를 두드린다',advice:'이제 결단 내려, 답할 시간이야'},
-  {n:21,name:'화뢰서합',yao:['양','음','음','양','음','양'],oneline:'완성과 통합, 한 주기가 마무리된다',stock:'ETF·인덱스·대형주',situation:'한 챕터가 꼭 맞춰서 마무리된다',advice:'다음 단계로 넘어갈 준비를 해'},
-  {n:22,name:'산화비',yao:['양','음','양','음','음','양'],oneline:'새로운 불꽃, 시작의 에너지',stock:'성장주·AI테마',situation:'새 프로젝트의 불씨가 이미 잡혔다',advice:'지금이 시작, 주저하지 마'},
-  {n:23,name:'산지박',yao:['음','음','음','음','음','양'],oneline:'계획과 전략, 세계를 내다보는 시선',stock:'중국 관련주',situation:'큰 그림을 그리고 있지만 아직 움직임 전',advice:'전략 먼저 세우고 행동은 그 다음에'},
-  {n:24,name:'지뢰복',yao:['양','음','음','음','음','음'],oneline:'확장과 교역, 판을 넓힌다',stock:'해운·물류주',situation:'더 넓은 시장으로 너의 일이 퍼진다',advice:'판 키우고 밖으로 나가'},
-  {n:25,name:'천뢰무망',yao:['양','음','음','양','양','양'],oneline:'축하와 안정, 뿌리내린 자리의 기쁨',stock:'건설·부동산주',situation:'머무를 자리가 마련되고 안정감이 온다',advice:'여기가 네 자리, 뿌리내려'},
-  {n:26,name:'산천대축',yao:['양','양','양','음','음','양'],oneline:'경쟁과 갈등, 싸움이 힘을 키운다',stock:'증권주',situation:'경쟁자가 많고 결과는 아직 열려 있다',advice:'피하지 말고 정면으로 부딪쳐'},
-  {n:27,name:'산뢰이',yao:['양','음','음','음','음','양'],oneline:'승리와 개선, 돌파 뒤 얻는 박수',stock:'중소형·스팬주',situation:'고개 들고 인정받을 때가 온다',advice:'자신감 갖고 당당하게 나서'},
-  {n:28,name:'택풍대과',yao:['음','양','양','양','양','음'],oneline:'방어와 수호, 빈틈 없이 막아낸다',stock:'보안·사이버주',situation:'압박이 들어와도 네가 지켜야 할 자리가 있다',advice:'흔들리지 말고 중심 잡아'},
-  {n:29,name:'중수감',yao:['음','양','음','음','양','음'],oneline:'신속과 이동, 타이밍이 곧 온다',stock:'항공·여행주',situation:'일이 빠르게 진행되니 타이밍이 중요해',advice:'지금 움직여, 늦으면 놓친다'},
-  {n:30,name:'중화리',yao:['양','음','양','양','음','양'],oneline:'경계와 인내, 거의 다 왔으니 마지막까지',stock:'보험주',situation:'지치고 힘들지만 고지가 바로 더 앞이다',advice:'한 번만 더 버텨, 결실 곧이야'},
-  {n:31,name:'택산함',yao:['음','음','양','양','양','음'],oneline:'과중부하와 번아웃, 짐을 내려놓을 때',stock:'식품·건강식품주',situation:'다 혼자 떠안고 가다가 지쳐 있다',advice:'다 짊어지지 말고 당장 쉬어'},
-  {n:32,name:'뇌풍항',yao:['음','양','양','양','음','음'],oneline:'호기심과 새 영역, 처음 만나는 세계',stock:'이차전지 소재주',situation:'새로운 분야에 대한 관심이 트고 있다',advice:'호기심 따라가서 새 걸 배워봐'},
-  {n:33,name:'천산돈',yao:['음','음','양','양','양','양'],oneline:'열정과 돌진, 뜨겁게 달려간다',stock:'일반반도체·파운드리주',situation:'열기가 올라와 밀어붙여야 할 때',advice:'돌진해, 주저하면 식어버린다'},
-  {n:34,name:'뇌천대장',yao:['양','양','양','양','음','음'],oneline:'카리스마와 매력, 날 이끌어 끌어온다',stock:'엔터테인먼트·K-POP주',situation:'너의 매력이 제대로 터져나오는 시기',advice:'너의 색대로 당당하게 표현해'},
-  {n:35,name:'화지진',yao:['음','음','음','양','음','양'],oneline:'비전과 리더십, 앞장서서 이끈다',stock:'게임주',situation:'사람들이 너의 대답을 따라온다',advice:'비전을 명확히 선포해'},
-  {n:36,name:'지화명이',yao:['양','음','양','음','음','음'],oneline:'감정의 새 시작과 치유, 마음의 원천',stock:'제약·헬스케어주',situation:'닫혀 있던 감정이 다시 열릴 준비 중',advice:'마음 열어, 새 인연이 들어온다'},
-  {n:37,name:'풍화가인',yao:['양','음','양','음','양','양'],oneline:'파트너십과 결합, 둘이 한 팀',stock:'통신주',situation:'혼자가 아니라 함께 가는 시기',advice:'서로 진심으로 대하고 손잡아'},
-  {n:38,name:'화택규',yao:['양','양','음','양','음','양'],oneline:'축하와 연대, 함께 웃을 자리',stock:'영화·미디어주',situation:'사람들과 함께하는 흐름이 흔하다',advice:'즐길 일 즐기고 애쓰지 마'},
-  {n:39,name:'수산건',yao:['음','음','양','음','양','음'],oneline:'권태와 무관심, 지루함이 신호다',stock:'채권·다국적기업주',situation:'안정적이지만 새로움이 없어 지루하다',advice:'자리 바꿔보면 다른 자극이 온다'},
-  {n:40,name:'뇌수해',yao:['음','양','음','양','음','음'],oneline:'상실과 애도, 손에 남은 것도 있다',stock:'우선주·고배당주',situation:'잃은 것에 마음이 머물러 있다',advice:'충분히 슬퍼하고 남은 걸 봐'},
-  {n:41,name:'산택손',yao:['양','양','음','음','음','양'],oneline:'향수와 추억, 익숙함에서 답을 찾는다',stock:'세대교체·레트로테마주',situation:'옛것과 익숙한 자리에서 힌트가 나온다',advice:'옛것에서 답을 찾고 익숙함을 살려'},
-  {n:42,name:'풍뢰익',yao:['양','음','음','음','양','양'],oneline:'환상과 선택지, 다 잡으려다 놓친다',stock:'조선·구조조정주',situation:'선택지가 너무 많아 무엇 하나 잡지 못한다',advice:'다 갖지 말고 하나만 골라'},
-  {n:43,name:'택천쾌',yao:['양','양','양','양','양','음'],oneline:'떠남과 영적 여정, 더 큰 의미를 찾아간다',stock:'대형우량주·코스피200',situation:'지금 자리에 미련을 두지 않고 떠날 시점이다',advice:'미련 없이 조용히 떠나'},
-  {n:44,name:'천풍구',yao:['음','양','양','양','양','양'],oneline:'소원성취, 바라던 것이 손에 들어온다',stock:'수소·친환경주',situation:'바라던 일이 이뤄지기 직전이다',advice:'소원 빌고 받아들일 준비 해'},
-  {n:45,name:'택지취',yao:['음','음','음','양','양','음'],oneline:'가족과 완성, 이어지는 풍요와 행복',stock:'대형주·우선주',situation:'가족·뿌리·관계의 결실이 함께 온다',advice:'가족·뿌리부터 챙겨'},
-  {n:46,name:'지풍승',yao:['음','양','양','음','음','음'],oneline:'감성과 예술, 새 소식이 마음을 두드린다',stock:'교육·웹툰주',situation:'새로운 소식이나 감성적 자극이 도착한다',advice:'감성 살려서 표현해봐'},
-  {n:47,name:'택수곤',yao:['음','양','음','양','양','음'],oneline:'로맨틱한 제안, 마음이 다가온다',stock:'스트리밍·OTT주',situation:'누군가의 제안이나 고백이 다가온다',advice:'제안 들어오면 마음 열고 받아'},
-  {n:48,name:'수풍정',yao:['음','양','양','음','양','음'],oneline:'직관과 모성, 보살피는 자의 지혜',stock:'아동·교육주',situation:'주변을 보살피는 자리에 네가 있다',advice:'주변 돌보면 너에게도 돌아온다'},
-  {n:49,name:'택화혁',yao:['양','음','양','양','양','음'],oneline:'관대와 지혜, 감정을 다스리는 균형',stock:'우선주·자사주매입주',situation:'감정을 다스리며 너그러움이 빛난다',advice:'감정 다스리고 너그러워져'},
-  {n:50,name:'화풍정',yao:['음','양','양','양','음','양'],oneline:'돌파와 명료, 진실의 검을 뽑는다',stock:'한류·패션주',situation:'막혀 있던 일이 명료하게 풀린다',advice:'진실을 명료하게 드러내'},
-  {n:51,name:'중뢰진',yao:['양','음','음','양','음','음'],oneline:'교착과 회피, 결정을 미루는 자리',stock:'일본 관련주',situation:'보고 싶지 않아서 결정을 미루고 있다',advice:'결정 미루지 말고 직시해'},
-  {n:52,name:'중산간',yao:['음','음','양','음','음','양'],oneline:'상처와 슬픔, 아픔을 인정해야 지나간다',stock:'배당주·인컴주',situation:'마음의 상처가 아직 진행 중이다',advice:'아픈 거 인정하고 회피하지 마'},
-  {n:53,name:'풍산점',yao:['음','음','양','음','양','양'],oneline:'휴식과 회복, 잠시 멈추고 재정비할 때',stock:'지주회사 재평가주',situation:'강제로라도 멈춰서 쉬어야 할 때다',advice:'강제로라도 지금 쉬어'},
-  {n:54,name:'뇌택귀매',yao:['양','양','음','양','음','음'],oneline:'피로스의 승리, 이겨도 잃은 게 많다',stock:'화환·화장품주',situation:'이겨도 잃는 자리, 명분 없는 싸움이다',advice:'이길 싸움 아니야, 물러서'},
-  {n:55,name:'뇌화풍',yao:['양','음','양','양','음','음'],oneline:'전환과 이동, 더 나은 곳으로 건너간다',stock:'이차전지 완제주',situation:'한 자리에서 다른 자리로 옮겨가는 중이다',advice:'끝난 자리 떠나, 새 곳으로 가'},
-  {n:56,name:'화산려',yao:['음','음','양','양','음','양'],oneline:'교활과 전략, 정면 대신 우회로 간다',stock:'로봇·AI주',situation:'정면충돌보다 영리한 우회가 통한다',advice:'정면 말고 영리하게 우회해'},
-  {n:57,name:'중풍손',yao:['음','양','양','음','양','양'],oneline:'구속과 마비, 스스로 묶은 줄을 풀어라',stock:'원자력 관련주',situation:'움직일 수 있는데 스스로 묶고 있다',advice:'스스로 묶지 마, 사실 풀려있어'},
-  {n:58,name:'중택태',yao:['양','양','음','양','양','음'],oneline:'불안과 악몽, 걱정의 대부분은 일어나지 않는다',stock:'정치테마주',situation:'잠 못 들 만큼 걱정이 부풀어 있다',advice:'걱정의 90%는 일어나지 않는다'},
-  {n:59,name:'풍수환',yao:['음','양','음','음','양','양'],oneline:'바닥과 종결, 가장 어두운 곳에서 새 빛이 든다',stock:'메모리반도체 테마',situation:'이미 바닥, 더 떨어질 곳은 없다',advice:'바닥 찍었으니 이제 올라간다'},
-  {n:60,name:'수택절',yao:['양','양','음','음','양','음'],oneline:'호기심과 정보, 배움이 무기가 된다',stock:'핀테크·간편결제주',situation:'정보 수집과 학습이 필요한 단계',advice:'더 알아봐, 정보가 무기야'},
-  {n:61,name:'풍택중부',yao:['양','양','음','음','양','양'],oneline:'돌진과 공격, 빠른 행동이 승부를 가른다',stock:'모멘텀·단기매매 테마',situation:'속도전이 시작됐고 흐름은 빠르다',advice:'속도가 답이야, 들이받아'},
-  {n:62,name:'뇌산소과',yao:['음','음','양','양','음','음'],oneline:'명석과 객관, 감정 빼고 논리로 본다',stock:'손해보험·재보험주',situation:'감정 정리하고 객관적으로 봐야 할 때',advice:'감정 빼고 논리로 봐'},
-  {n:63,name:'수화기제',yao:['양','음','양','음','양','음'],oneline:'권위와 지혜, 단호한 결단의 자리',stock:'고가주·대형주',situation:'단호한 결단이 요구되는 자리에 있다',advice:'단호하게 잘라, 명확히 말해'},
-  {n:64,name:'화수미제',yao:['음','양','음','양','음','양'],oneline:'물질의 씨앗, 새로운 기회가 손에 들어온다',stock:'귀금속·자원주',situation:'실질적 기회가 손에 들어오기 시작한다',advice:'기회 들어왔어, 손 뻗어'},
-];
+/* ============================================================
+   주역 데이터 (해석은 엑셀로 채울 예정 — 여기에 매핑됨)
+   HEXAGRAMS[코드6자리] = {num, name, symbol, judgment, yao:[6개]}
+   코드: 아래효(초효)부터 위효(상효)까지, 1=양(⚊) 0=음(⚋)
+   ============================================================ */
 
-/* ── 상태 ── */
-let currentMode = 'advice';
-let throwCount = 0;
-let results = []; // 'yang' or 'yin' x6
-let isAnimating = false;
+// King Wen 순서 64괘 번호 매핑 (코드 → 괘번호/이름/괘상)
+// 코드는 초효(맨아래)→상효(맨위) 순서 6비트
+const HEX_TABLE = {
+"111111":{num:1,name:"중천건",sym:"䷀"},   "000000":{num:2,name:"중지곤",sym:"䷁"},
+"100010":{num:3,name:"수뢰둔",sym:"䷂"},   "010001":{num:4,name:"산수몽",sym:"䷃"},
+"111010":{num:5,name:"수천수",sym:"䷄"},   "010111":{num:6,name:"천수송",sym:"䷅"},
+"010000":{num:7,name:"지수사",sym:"䷆"},   "000010":{num:8,name:"수지비",sym:"䷇"},
+"111011":{num:9,name:"풍천소축",sym:"䷈"}, "110111":{num:10,name:"천택리",sym:"䷉"},
+"111000":{num:11,name:"지천태",sym:"䷊"},  "000111":{num:12,name:"천지비",sym:"䷋"},
+"101111":{num:13,name:"천화동인",sym:"䷌"},"111101":{num:14,name:"화천대유",sym:"䷍"},
+"001000":{num:15,name:"지산겸",sym:"䷎"},  "000100":{num:16,name:"뇌지예",sym:"䷏"},
+"100110":{num:17,name:"택뢰수",sym:"䷐"},  "011001":{num:18,name:"산풍고",sym:"䷑"},
+"110000":{num:19,name:"지택림",sym:"䷒"},  "000011":{num:20,name:"풍지관",sym:"䷓"},
+"100101":{num:21,name:"화뢰서합",sym:"䷔"},"101001":{num:22,name:"산화비",sym:"䷕"},
+"000001":{num:23,name:"산지박",sym:"䷖"},  "100000":{num:24,name:"지뢰복",sym:"䷗"},
+"100111":{num:25,name:"천뢰무망",sym:"䷘"},"111001":{num:26,name:"산천대축",sym:"䷙"},
+"100001":{num:27,name:"산뢰이",sym:"䷚"},  "011110":{num:28,name:"택풍대과",sym:"䷛"},
+"010010":{num:29,name:"중수감",sym:"䷜"},  "101101":{num:30,name:"중화리",sym:"䷝"},
+"001110":{num:31,name:"택산함",sym:"䷞"},  "011100":{num:32,name:"뇌풍항",sym:"䷟"},
+"001111":{num:33,name:"천산돈",sym:"䷠"},  "111100":{num:34,name:"뇌천대장",sym:"䷡"},
+"000101":{num:35,name:"화지진",sym:"䷢"},  "101000":{num:36,name:"지화명이",sym:"䷣"},
+"101011":{num:37,name:"풍화가인",sym:"䷤"},"110101":{num:38,name:"화택규",sym:"䷥"},
+"001010":{num:39,name:"수산건",sym:"䷦"},  "010100":{num:40,name:"뇌수해",sym:"䷧"},
+"110001":{num:41,name:"산택손",sym:"䷨"},  "100011":{num:42,name:"풍뢰익",sym:"䷩"},
+"111110":{num:43,name:"택천쾌",sym:"䷪"},  "011111":{num:44,name:"천풍구",sym:"䷫"},
+"000110":{num:45,name:"택지췌",sym:"䷬"},  "011000":{num:46,name:"지풍승",sym:"䷭"},
+"010110":{num:47,name:"택수곤",sym:"䷮"},  "011010":{num:48,name:"수풍정",sym:"䷯"},
+"101110":{num:49,name:"택화혁",sym:"䷰"},  "011101":{num:50,name:"화풍정",sym:"䷱"},
+"100100":{num:51,name:"중뢰진",sym:"䷲"},  "001001":{num:52,name:"중산간",sym:"䷳"},
+"001011":{num:53,name:"풍산점",sym:"䷴"},  "110100":{num:54,name:"뇌택귀매",sym:"䷵"},
+"101100":{num:55,name:"뇌화풍",sym:"䷶"},  "001101":{num:56,name:"화산려",sym:"䷷"},
+"011011":{num:57,name:"중풍손",sym:"䷸"},  "110110":{num:58,name:"중택태",sym:"䷹"},
+"010011":{num:59,name:"풍수환",sym:"䷺"},  "110010":{num:60,name:"수택절",sym:"䷻"},
+"110011":{num:61,name:"풍택중부",sym:"䷼"},"001100":{num:62,name:"뇌산소과",sym:"䷽"},
+"101010":{num:63,name:"수화기제",sym:"䷾"},"010101":{num:64,name:"화수미제",sym:"䷿"}
+};
 
-/* ── 별 배경 ── */
-(function(){
-  const c=document.getElementById('bg-canvas');
-  let stars=[];
-  function resize(){ c.width=window.innerWidth; c.height=window.innerHeight; initStars(); }
-  function initStars(){
-    stars=[];
-    for(let i=0;i<220;i++) stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.2+0.2,a:Math.random()*0.7+0.1,tw:Math.random()*Math.PI*2,sp:Math.random()*0.015+0.003});
+/* ============================================================
+   해석 데이터 — 구글시트 게시 CSV에서 물어옴
+   ↓↓↓ 시트 게시 후 이 URL만 본인 것으로 교체하면 됨 ↓↓↓
+   (구글시트 → 파일 → 공유 → 웹에 게시 → "쉼표로 구분된 값(.csv)" → URL 복사)
+   시트 컬럼 순서:  번호 | 구분 | 위치 | 내용
+   구분값: 괘사 / 효사 / 용효   (효사일 때만 위치 1~6 채움)
+   ============================================================ */
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSM2mSujP0zgntmkw0ZYzTX_yqX6jJM7ECDO5FJbCHYBCT4dn6IeS7f86iC-6xJALBHt0p40iYoL_9U/pub?output=csv";
+
+/* 괘번호(1~64) → {judgment, yao[6], yong} */
+let INTERP = {};
+let dataLoaded = false;
+
+/* 간단한 CSV 파서 (따옴표·줄바꿈·쉼표 포함 셀 처리) */
+function parseCSV(text){
+  const rows=[]; let row=[]; let cur=''; let q=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i], nx=text[i+1];
+    if(q){
+      if(ch==='"'&&nx==='"'){cur+='"';i++;}
+      else if(ch==='"'){q=false;}
+      else cur+=ch;
+    }else{
+      if(ch==='"')q=true;
+      else if(ch===','){row.push(cur);cur='';}
+      else if(ch==='\r'){}
+      else if(ch==='\n'){row.push(cur);rows.push(row);row=[];cur='';}
+      else cur+=ch;
+    }
   }
-  function draw(){
-    const ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
-    const t=Date.now()*0.001;
-    // 은하수 띠
-    ctx.save(); ctx.translate(c.width*.5,c.height*.5); ctx.rotate(-0.3);
-    const mw=ctx.createLinearGradient(-c.width,0,c.width,0);
-    mw.addColorStop(0,'rgba(30,20,60,0)'); mw.addColorStop(.45,'rgba(60,40,120,.1)'); mw.addColorStop(.5,'rgba(80,60,160,.15)'); mw.addColorStop(.55,'rgba(60,40,120,.1)'); mw.addColorStop(1,'rgba(30,20,60,0)');
-    ctx.fillStyle=mw; ctx.fillRect(-c.width,-c.height*.7,c.width*2,c.height*1.4); ctx.restore();
-    stars.forEach(s=>{
-      const a=s.a*(0.6+0.4*Math.sin(s.tw+t*s.sp*10));
-      ctx.beginPath(); ctx.arc(s.x*c.width,s.y*c.height,s.r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(220,200,160,${a})`; ctx.fill();
-    });
-    requestAnimationFrame(draw);
-  }
-  window.addEventListener('resize',resize); resize(); draw();
-})();
-
-/* ── 파티클 ── */
-const pCvs=document.getElementById('particle-canvas');
-const pCtx=pCvs.getContext('2d');
-let particles=[];
-function resizeParticle(){ pCvs.width=window.innerWidth; pCvs.height=window.innerHeight; }
-window.addEventListener('resize',resizeParticle); resizeParticle();
-function spawnParticles(x,y,color,n=20){
-  for(let i=0;i<n;i++) particles.push({x,y,vx:(Math.random()-0.5)*6,vy:(Math.random()-2)*5,life:1,decay:0.02+Math.random()*0.03,size:2+Math.random()*4,color});
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  return rows;
 }
-(function particleLoop(){
-  pCtx.clearRect(0,0,pCvs.width,pCvs.height);
-  particles=particles.filter(p=>p.life>0);
-  particles.forEach(p=>{
-    p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.life-=p.decay;
-    pCtx.globalAlpha=p.life; pCtx.fillStyle=p.color;
-    pCtx.beginPath(); pCtx.arc(p.x,p.y,p.size,0,Math.PI*2); pCtx.fill();
+
+function buildInterp(rows){
+  const out={};
+  // 첫 행이 헤더면 건너뜀(번호 컬럼이 숫자가 아니면 헤더로 간주)
+  let start=0;
+  if(rows.length && isNaN(parseInt(rows[0][0],10))) start=1;
+  for(let i=start;i<rows.length;i++){
+    const r=rows[i]; if(!r||r.length<2) continue;
+    const num=parseInt((r[0]||'').trim(),10);
+    if(isNaN(num)) continue;
+    const kind=(r[1]||'').trim();
+    const pos=parseInt((r[2]||'').trim(),10);
+    const body=(r[3]||'').trim();
+    if(!out[num]) out[num]={judgment:'',yao:['','','','','',''],yong:''};
+    if(kind==='괘사') out[num].judgment=body;
+    else if(kind==='효사'){ if(pos>=1&&pos<=6) out[num].yao[pos-1]=body; }
+    else if(kind==='용효') out[num].yong=body;
+  }
+  return out;
+}
+
+function showLoadStatus(msg, ok){
+  let bar=document.getElementById('loadStatus');
+  if(!bar){
+    bar=document.createElement('div');
+    bar.id='loadStatus';
+    bar.style.cssText='font-family:Gowun Dodum,sans-serif;font-size:12px;text-align:center;padding:8px;margin-bottom:14px;border-radius:8px;';
+    const w=document.querySelector('.wrap');
+    w.insertBefore(bar, w.children[1]);
+  }
+  bar.textContent=msg;
+  bar.style.background = ok ? 'rgba(80,140,80,.18)' : 'rgba(160,60,60,.20)';
+  bar.style.color = ok ? '#9ec99e' : '#e0a0a0';
+}
+
+async function loadInterp(){
+  if(!SHEET_CSV_URL || SHEET_CSV_URL.startsWith('여기에')){
+    showLoadStatus('시트 URL 미설정', false);
+    return;
+  }
+  showLoadStatus('해석 데이터 불러오는 중…', true);
+  try{
+    const res=await fetch(SHEET_CSV_URL);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const text=await res.text();
+    INTERP=buildInterp(parseCSV(text));
+    dataLoaded=true;
+    const cnt=Object.keys(INTERP).length;
+    if(cnt===0){
+      showLoadStatus('CSV는 받았으나 내용이 비었음 — 게시 범위/컬럼 확인 필요', false);
+    }else{
+      showLoadStatus('해석 데이터 로드 완료 ('+cnt+'괘)', true);
+      setTimeout(()=>{const b=document.getElementById('loadStatus');if(b)b.style.display='none';},2500);
+    }
+    if(throws.length>=6) computeResult();
+  }catch(e){
+    let hint = location.protocol==='file:'
+      ? '파일을 직접 더블클릭(file://)하면 외부 데이터를 못 불러옵니다. 웹 호스팅(GitHub Pages 등)에 올려서 여세요.'
+      : '시트 게시 상태 또는 URL을 확인하세요.';
+    showLoadStatus('로드 실패: '+e.message+' — '+hint, false);
+  }
+}
+loadInterp();
+
+/* ============================================================
+   동전점 로직
+   동전 3개: 앞면(3) + 뒷면(2) 합산
+   합 6 = 노음(동효, 음→양),  합 9 = 노양(동효, 양→음)
+   합 7 = 소양(안정 양),       합 8 = 소음(안정 음)
+   ============================================================ */
+let throws = [];          // 각 효 결과 {value, yin, moving}  초효부터
+const throwBtn=document.getElementById('throwBtn');
+const resetBtn=document.getElementById('resetBtn');
+const linesBox=document.getElementById('linesBox');
+const stage=document.getElementById('stage');
+const coinsEl=document.getElementById('coins');
+const resultEl=document.getElementById('result');
+
+function flipCoins(){
+  const c=coinsEl.children;
+  for(let i=0;i<3;i++){c[i].classList.remove('flip');void c[i].offsetWidth;c[i].classList.add('flip');}
+}
+
+function tossOne(){
+  // 동전 하나: 앞3 / 뒤2, 50:50
+  let sum=0, faces=[];
+  for(let i=0;i<3;i++){const h=Math.random()<0.5;faces.push(h?3:2);sum+=h?3:2;}
+  // sum: 6,7,8,9
+  const yin = (sum===6||sum===8);      // 음효 여부
+  const moving = (sum===6||sum===9);   // 동효 여부
+  return {sum,yin,moving,faces};
+}
+
+function renderLines(){
+  linesBox.innerHTML='';
+  throws.forEach((t,idx)=>{
+    const row=document.createElement('div');
+    row.className='line-row';
+    row.style.animationDelay=(idx*0.02)+'s';
+    const names=['초효','2효','3효','4효','5효','상효'];
+    const yaoCls = t.yin?'yao yin':'yao solid';
+    const segs = t.yin? '<div class="seg"></div><div class="seg"></div>' : '<div class="seg"></div>';
+    let mark='';
+    if(t.moving){ mark = t.yin? '<span class="dot">×→양</span>' : '<span class="o">○→음</span>'; }
+    row.innerHTML=`<div class="line-no">${names[idx]}</div>
+      <div class="${yaoCls}">${segs}</div>
+      <div class="moving">${mark}</div>`;
+    linesBox.appendChild(row);
   });
-  pCtx.globalAlpha=1;
-  requestAnimationFrame(particleLoop);
-})();
+}
 
-/* ── 화면 전환 ── */
-function transitionTo(fromId, toId, onMid){
-  const overlay=document.getElementById('transition-overlay');
-  const from=document.getElementById(fromId);
-  const to=document.getElementById(toId);
-
-  // 1) 오버레이 올리기
-  overlay.style.transition='opacity 0.3s ease';
-  overlay.style.opacity='1';
-
+throwBtn.addEventListener('click',()=>{
+  if(throws.length>=6) return;
+  flipCoins();
   setTimeout(()=>{
-    // 2) 모든 화면 비활성화 (인라인 스타일 완전 제거)
-    document.querySelectorAll('.screen').forEach(s=>{
-      s.classList.remove('active');
-      s.removeAttribute('style'); // 인라인 스타일 전부 제거
-    });
-
-    if(onMid) onMid();
-
-    // 3) 대상 화면 활성화
-    to.classList.add('active');
-
-    // 4) 오버레이 내리기
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      overlay.style.transition='opacity 0.4s ease';
-      overlay.style.opacity='0';
-    }));
-  }, 320);
-}
-
-/* ── 동전 캔버스 ── */
-const coinCvs=document.getElementById('coin-canvas');
-const coinCtx=coinCvs.getContext('2d');
-let coinAnim={active:false,phase:0,result:null,speed:0};
-
-function drawCoin(scaleX, isFront, glowAmt){
-  const W=coinCvs.width, H=coinCvs.height;
-  coinCtx.clearRect(0,0,W,H);
-  const cx=W/2, cy=H/2, r=62;
-  const sx=Math.abs(scaleX);
-
-  coinCtx.save();
-  coinCtx.translate(cx,cy);
-  coinCtx.scale(scaleX,1);
-
-  // 동전 테두리 glow
-  if(glowAmt>0){
-    const grd=coinCtx.createRadialGradient(0,0,r*0.5,0,0,r*1.4);
-    grd.addColorStop(0,`rgba(200,168,110,${glowAmt*0.4})`);
-    grd.addColorStop(1,'transparent');
-    coinCtx.beginPath(); coinCtx.arc(0,0,r*1.4,0,Math.PI*2);
-    coinCtx.fillStyle=grd; coinCtx.fill();
-  }
-
-  // 동전 본체
-  const grad=coinCtx.createRadialGradient(-r*0.25,-r*0.2,r*0.1,0,0,r);
-  if(isFront){
-    grad.addColorStop(0,'#e8e0cc'); grad.addColorStop(0.4,'#c8c0a8'); grad.addColorStop(0.8,'#a09080'); grad.addColorStop(1,'#786050');
-  } else {
-    grad.addColorStop(0,'#d8d0bc'); grad.addColorStop(0.4,'#b0a890'); grad.addColorStop(0.8,'#888070'); grad.addColorStop(1,'#605848');
-  }
-  coinCtx.beginPath(); coinCtx.arc(0,0,r,0,Math.PI*2);
-  coinCtx.fillStyle=grad; coinCtx.fill();
-
-  // 테두리 음각 링
-  coinCtx.strokeStyle='rgba(0,0,0,0.3)'; coinCtx.lineWidth=3;
-  coinCtx.beginPath(); coinCtx.arc(0,0,r-3,0,Math.PI*2); coinCtx.stroke();
-  coinCtx.strokeStyle='rgba(255,255,255,0.15)'; coinCtx.lineWidth=1.5;
-  coinCtx.beginPath(); coinCtx.arc(0,0,r-6,0,Math.PI*2); coinCtx.stroke();
-
-  if(sx>0.15){
-    if(isFront){
-      // 앞면: 두루미 실루엣
-      coinCtx.fillStyle='rgba(60,50,40,0.85)';
-      // 몸통
-      coinCtx.beginPath(); coinCtx.ellipse(0,8,14,20,0,0,Math.PI*2); coinCtx.fill();
-      // 목
-      coinCtx.beginPath(); coinCtx.moveTo(-4,-8); coinCtx.quadraticCurveTo(-8,-22,-2,-34); coinCtx.quadraticCurveTo(2,-36,4,-28); coinCtx.quadraticCurveTo(0,-18,4,-10); coinCtx.closePath(); coinCtx.fill();
-      // 부리
-      coinCtx.fillStyle='rgba(80,60,30,0.9)';
-      coinCtx.beginPath(); coinCtx.moveTo(-2,-34); coinCtx.lineTo(-12,-30); coinCtx.lineTo(-2,-28); coinCtx.fill();
-      // 날개
-      coinCtx.fillStyle='rgba(50,42,34,0.7)';
-      coinCtx.beginPath(); coinCtx.moveTo(-4,2); coinCtx.quadraticCurveTo(-32,-4,-34,12); coinCtx.quadraticCurveTo(-20,14,-4,16); coinCtx.fill();
-      coinCtx.beginPath(); coinCtx.moveTo(4,2); coinCtx.quadraticCurveTo(28,-2,30,10); coinCtx.quadraticCurveTo(18,14,4,16); coinCtx.fill();
-      // 다리
-      coinCtx.strokeStyle='rgba(60,50,40,0.8)'; coinCtx.lineWidth=2.5;
-      coinCtx.beginPath(); coinCtx.moveTo(-5,26); coinCtx.lineTo(-6,40); coinCtx.lineTo(-12,46); coinCtx.stroke();
-      coinCtx.beginPath(); coinCtx.moveTo(4,26); coinCtx.lineTo(5,40); coinCtx.lineTo(11,46); coinCtx.stroke();
-      // 머리 붉은 점
-      coinCtx.fillStyle='rgba(180,30,20,0.9)';
-      coinCtx.beginPath(); coinCtx.arc(0,-31,4,0,Math.PI*2); coinCtx.fill();
-      // 텍스트
-      coinCtx.fillStyle='rgba(60,50,40,0.6)';
-      coinCtx.font=`bold ${Math.round(8*sx)}px sans-serif`;
-      coinCtx.textAlign='center'; coinCtx.textBaseline='middle';
-      coinCtx.fillText('한국은행',0,52*sx>8?52:52);
-    } else {
-      // 뒷면: 500
-      coinCtx.fillStyle='rgba(60,50,40,0.9)';
-      coinCtx.font=`bold ${Math.round(38*sx)}px 'Nanum Gothic',sans-serif`;
-      coinCtx.textAlign='center'; coinCtx.textBaseline='middle';
-      coinCtx.fillText('500',0,-4);
-      coinCtx.font=`${Math.round(10*sx)}px sans-serif`;
-      coinCtx.fillStyle='rgba(60,50,40,0.6)';
-      coinCtx.fillText('원',0,22);
-      // 무궁화 장식
-      for(let i=0;i<8;i++){
-        const a=i/8*Math.PI*2;
-        coinCtx.beginPath();
-        coinCtx.arc(Math.cos(a)*48*sx,Math.sin(a)*48*sx,3*sx,0,Math.PI*2);
-        coinCtx.fillStyle='rgba(60,50,40,0.25)';
-        coinCtx.fill();
-      }
+    throws.push(tossOne());
+    renderLines();
+    const n=throws.length;
+    if(n<6){
+      throwBtn.textContent=`동전 던지기 (${n+1}/6)`;
+      stage.textContent=`${n}효 완성 — 아래에서 위로 쌓입니다`;
+    }else{
+      throwBtn.disabled=true;
+      throwBtn.textContent='괘 완성';
+      stage.textContent='괘가 세워졌습니다';
+      resetBtn.style.display='block';
+      computeResult();
     }
-  }
-  coinCtx.restore();
+  },560);
+});
+
+resetBtn.addEventListener('click',()=>{
+  throws=[];
+  linesBox.innerHTML='';
+  throwBtn.disabled=false;
+  throwBtn.textContent='동전 던지기 (1/6)';
+  stage.textContent='동전 3개를 6번 던져 괘를 세웁니다';
+  resetBtn.style.display='none';
+  resultEl.className='result';
+  resultEl.innerHTML='';
+});
+
+function codeFrom(arr){ // arr: throws → 본괘 코드 (초효→상효)
+  return arr.map(t=>t.yin?'0':'1').join('');
+}
+function changedCode(arr){ // 동효 반영한 지괘 코드
+  return arr.map(t=>{
+    if(t.moving) return t.yin?'1':'0';  // 음동→양, 양동→음
+    return t.yin?'0':'1';
+  }).join('');
 }
 
-/* ── 동전 애니메이션 ── */
-let coinAnimId=null;
-function animateCoin(finalResult, onDone){
-  if(coinAnimId) cancelAnimationFrame(coinAnimId);
-  let t=0;
-  const totalFrames=38; // 더 짧게
-  const frontSide = finalResult==='양';
+function movingPositions(){ // 1-indexed 효 위치 배열
+  const p=[];
+  throws.forEach((t,i)=>{if(t.moving)p.push(i+1);});
+  return p;
+}
 
-  function step(){
-    t++;
-    const progress=t/totalFrames;
-    // 앞부분 빠르게, 뒷부분 감속
-    const speed = progress < 0.6 ? 28 : 28*(1-(progress-0.6)/0.4*0.92);
-    const angle = (t * speed) * Math.PI / 180;
-    let scaleX = Math.cos(angle);
+const YAO_NAMES=['초효','2효','3효','4효','5효','상효'];
 
-    let isFront;
-    if(t < totalFrames*0.82){
-      isFront = Math.floor(t*speed/180) % 2 === 0;
-    } else {
-      isFront = frontSide;
-      scaleX = Math.abs(scaleX);
+/* 동효 개수별 정통 점단 규칙 (주희 점법) */
+function divinationRule(mp, benNum, biNum){
+  const k=mp.length;
+  if(k===0) return {text:`동효 없음 → <b>본괘 「괘사」</b>로 판단합니다.`, focus:{type:'ben-judgment'}};
+  if(k===1) return {text:`동효 1개 → 본괘 <b>${YAO_NAMES[mp[0]-1]}</b>의 효사로 판단합니다.`, focus:{type:'ben-yao',yao:[mp[0]]}};
+  if(k===2) return {text:`동효 2개 → 본괘 두 동효 중 <b>위쪽(${YAO_NAMES[mp[1]-1]})</b> 효사를 위주로 봅니다.`, focus:{type:'ben-yao',yao:[mp[1]],sub:[mp[0]]}};
+  if(k===3) return {text:`동효 3개 → <b>본괘 괘사 + 지괘 괘사</b> 둘 다 보되 본괘를 위주로 합니다.`, focus:{type:'both-judgment'}};
+  if(k===4){const still=[1,2,3,4,5,6].filter(x=>!mp.includes(x));return {text:`동효 4개 → 지괘에서 안 변한 두 효 중 <b>아래쪽(${YAO_NAMES[still[0]-1]})</b> 효사(지괘 기준)로 판단합니다.`, focus:{type:'bi-yao',yao:[still[0]],sub:[still[1]]}};}
+  if(k===5){const still=[1,2,3,4,5,6].filter(x=>!mp.includes(x));return {text:`동효 5개 → 지괘에서 안 변한 <b>${YAO_NAMES[still[0]-1]}</b> 효사(지괘 기준)로 판단합니다.`, focus:{type:'bi-yao',yao:[still[0]]}};}
+  // k===6
+  if(benNum===1) return {text:`여섯 효 모두 동함(건괘) → <b>용구(用九)</b>로 판단합니다.`, focus:{type:'yong',which:'9'}};
+  if(benNum===2) return {text:`여섯 효 모두 동함(곤괘) → <b>용육(用六)</b>으로 판단합니다.`, focus:{type:'yong',which:'6'}};
+  return {text:`여섯 효 모두 동함 → <b>지괘 괘사</b>로 판단합니다.`, focus:{type:'bi-judgment'}};
+}
+
+function interpOf(num){ return INTERP[num]||{}; }
+function emptyMsg(){ return dataLoaded ? '<span class="empty-note">해석 미입력 (시트에 추가하세요)</span>' : '<span class="empty-note">해석 불러오는 중… (시트 URL 미설정 시 비어있음)</span>'; }
+function judgmentText(num){ const d=interpOf(num); return d.judgment || emptyMsg(); }
+function yaoText(num,pos){ const d=interpOf(num); return (d.yao&&d.yao[pos-1]) || emptyMsg(); }
+
+function computeResult(){
+  const mp=movingPositions();
+  const benCode=codeFrom(throws);
+  const ben=HEX_TABLE[benCode];
+  const hasMoving=mp.length>0;
+  const biCode=changedCode(throws);
+  const bi=hasMoving?HEX_TABLE[biCode]:null;
+  const rule=divinationRule(mp, ben.num, bi?bi.num:null);
+
+  let html='';
+  // 본괘/지괘 카드
+  html+='<div class="hexa-pair">';
+  html+=`<div class="hexa-card"><div class="label">본괘 本卦</div><div class="symbol">${ben.sym}</div><div class="hname">${ben.name}</div><div class="hnum">제 ${ben.num} 괘</div></div>`;
+  if(bi){
+    html+='<div class="arrow">→</div>';
+    html+=`<div class="hexa-card"><div class="label">지괘 之卦</div><div class="symbol">${bi.sym}</div><div class="hname">${bi.name}</div><div class="hnum">제 ${bi.num} 괘</div></div>`;
+  }
+  html+='</div>';
+
+  // 점단 규칙 안내
+  html+=`<div class="section"><h3>점단 방법</h3><div class="body">${rule.text}</div></div>`;
+
+  // 본괘 괘사
+  html+=`<div class="section"><h3>본괘 「${ben.name}」 괘사</h3><div class="body">${judgmentText(ben.num)}</div></div>`;
+
+  // 동효 효사 (전부 표시)
+  if(hasMoving){
+    html+='<div class="section"><h3>동효(動爻) 효사</h3><div class="body">';
+    if(mp.length===6 && (ben.num===1||ben.num===2)){
+      const d=interpOf(ben.num);
+      const yt=ben.num===1?'용구 用九':'용육 用六';
+      const txt=(d.yong)||emptyMsg();
+      html+=`<div class="yao-item"><div class="yt">${yt}</div>${txt}</div>`;
+    }else{
+      mp.forEach(p=>{
+        html+=`<div class="yao-item"><div class="yt">${YAO_NAMES[p-1]} 動</div>${yaoText(ben.num,p)}</div>`;
+      });
     }
-    const glow = progress > 0.75 ? (progress-0.75)/0.25 : 0;
-    drawCoin(scaleX, isFront, glow);
-
-    if(t < totalFrames){ coinAnimId=requestAnimationFrame(step); }
-    else { drawCoin(1, frontSide, 1); if(onDone) onDone(); }
-  }
-  step();
-}
-
-/* ── 동전 소리 ── */
-let audioCtx=null;
-function getCoinSound(){
-  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-  const ac=audioCtx;
-  // 짧은 메탈릭 틱 사운드
-  const osc=ac.createOscillator();
-  const gain=ac.createGain();
-  const filter=ac.createBiquadFilter();
-  filter.type='bandpass'; filter.frequency.value=3000; filter.Q.value=2;
-  osc.type='sine'; osc.frequency.setValueAtTime(1800,ac.currentTime);
-  osc.frequency.exponentialRampToValueAtTime(400,ac.currentTime+0.15);
-  gain.gain.setValueAtTime(0.4,ac.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.18);
-  osc.connect(filter); filter.connect(gain); gain.connect(ac.destination);
-  osc.start(); osc.stop(ac.currentTime+0.18);
-}
-function playLandingSound(){
-  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-  const ac=audioCtx;
-  const buf=ac.createBuffer(1,ac.sampleRate*0.08,ac.sampleRate);
-  const d=buf.getChannelData(0);
-  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2)*0.5;
-  const src=ac.createBufferSource(); src.buffer=buf;
-  const g=ac.createGain(); g.gain.value=0.3;
-  src.connect(g); g.connect(ac.destination); src.start();
-}
-
-/* ── 효선(爻) 렌더링 ── */
-function renderYao(container, type, index, animate){
-  const row=document.createElement('div');
-  row.className='yao-row';
-  const num=document.createElement('div');
-  num.className='yao-num';
-  num.textContent=index+1;
-  row.appendChild(num);
-  if(type==='양'){
-    const bar=document.createElement('div');
-    bar.className='yao-yang';
-    row.appendChild(bar);
-  } else {
-    const wrap=document.createElement('div');
-    wrap.className='yao-yin-wrap';
-    const h1=document.createElement('div'); h1.className='yao-yin-half';
-    const h2=document.createElement('div'); h2.className='yao-yin-half';
-    wrap.appendChild(h1); wrap.appendChild(h2);
-    row.appendChild(wrap);
-  }
-  container.appendChild(row);
-  if(animate){
-    setTimeout(()=>row.classList.add('show'),50);
-    const cx=coinCvs.getBoundingClientRect();
-    spawnParticles(cx.left+cx.width/2, cx.top+cx.height/2, type==='양'?'#f0d090':'#88aaff', 18);
-  } else {
-    row.classList.add('show');
-  }
-}
-
-/* ── 괘 찾기 ── */
-function findHexagram(yaoArr){
-  // yaoArr: ['양','음',...] 길이 6, 1효부터 6효
-  for(const h of HEXAGRAMS){
-    let match=true;
-    for(let i=0;i<6;i++){ if(h.yao[i]!==yaoArr[i]){ match=false; break; } }
-    if(match) return h;
-  }
-  // 못 찾으면 랜덤
-  return HEXAGRAMS[Math.floor(Math.random()*64)];
-}
-
-/* ── 모드 선택 ── */
-function selectMode(mode){
-  currentMode=mode;
-  throwCount=0; results=[];
-  document.getElementById('mode-badge').textContent=mode==='advice'?'🔮 현 상황 조언 듣기':'📈 국내 주식 추천 받기';
-  document.getElementById('yao-stack').innerHTML='';
-  document.getElementById('throw-hint').textContent='동전을 클릭해서 던지세요';
-  document.getElementById('throw-count').textContent='0 / 6';
-  drawCoin(1,true,0.3);
-  transitionTo('s-mode','s-coin');
-}
-
-/* ── 동전 던지기 ── */
-function throwCoin(){
-  if(isAnimating||throwCount>=6) return;
-  isAnimating=true;
-  document.getElementById('throw-hint').textContent='';
-  getCoinSound();
-  const r=Math.random()<0.5?'양':'음';
-  animateCoin(r,()=>{
-    playLandingSound();
-    results.push(r);
-    throwCount++;
-    document.getElementById('throw-count').textContent=`${throwCount} / 6`;
-    const stack=document.getElementById('yao-stack');
-    renderYao(stack,r,throwCount-1,true);
-    isAnimating=false;
-    if(throwCount<6){
-      document.getElementById('throw-hint').textContent=`${6-throwCount}번 더 던지세요`;
-    } else {
-      document.getElementById('throw-hint').textContent='✦ 괘가 완성되었습니다 ✦';
-      document.getElementById('coin-area').style.pointerEvents='none';
-      setTimeout(showGuaScreen,900);
-    }
-  });
-}
-
-/* ── 괘 화면 ── */
-function showGuaScreen(){
-  const gua=findHexagram(results);
-  document.getElementById('gua-num-label').textContent=`제 ${gua.n}괘`;
-  document.getElementById('gua-name-label').textContent=gua.name;
-  // 괘 심볼
-  const sym=document.getElementById('gua-symbol-big');
-  sym.innerHTML='';
-  for(let i=0;i<6;i++){
-    if(results[i]==='양'){
-      const bar=document.createElement('div'); bar.className='gua-yang-big'; sym.appendChild(bar);
-    } else {
-      const wrap=document.createElement('div'); wrap.className='gua-yin-big';
-      const h1=document.createElement('div'); h1.className='gua-yin-half-big';
-      const h2=document.createElement('div'); h2.className='gua-yin-half-big';
-      wrap.appendChild(h1); wrap.appendChild(h2); sym.appendChild(wrap);
-    }
-  }
-  // 드라마틱 전환: 파티클 폭발
-  const cx=window.innerWidth/2, cy=window.innerHeight/2;
-  for(let i=0;i<5;i++) setTimeout(()=>spawnParticles(cx+(Math.random()-0.5)*200,cy+(Math.random()-0.5)*200,'#c8a86e',15),i*80);
-  transitionTo('s-coin','s-gua');
-}
-
-/* ── 해석 화면 ── */
-function showResult(){
-  const gua=findHexagram(results);
-  // 심볼
-  const sym=document.getElementById('result-symbol');
-  sym.innerHTML='';
-  for(let i=0;i<6;i++){
-    if(results[i]==='양'){
-      const bar=document.createElement('div'); bar.className='result-yang'; sym.appendChild(bar);
-    } else {
-      const wrap=document.createElement('div'); wrap.className='result-yin';
-      const h1=document.createElement('div'); h1.className='result-yin-half';
-      const h2=document.createElement('div'); h2.className='result-yin-half';
-      wrap.appendChild(h1); wrap.appendChild(h2); sym.appendChild(wrap);
-    }
-  }
-  document.getElementById('result-name').textContent=gua.name;
-  document.getElementById('result-num').textContent=`제 ${gua.n}괘`;
-  document.getElementById('result-oneline').textContent=gua.oneline;
-
-  const stocksEl=document.getElementById('result-stocks');
-  stocksEl.innerHTML='';
-
-  if(currentMode==='stock'){
-    document.getElementById('result-label').textContent='국내 주식 추천';
-    document.getElementById('result-oneline').style.display='none';
-    document.getElementById('result-main').textContent=gua.oneline;
-    const tag=document.createElement('span'); tag.className='result-stock-tag'; tag.textContent=gua.stock;
-    stocksEl.appendChild(tag);
-  } else {
-    document.getElementById('result-label').textContent='현재 상황 · 조언';
-    document.getElementById('result-oneline').style.display='none';
-    document.getElementById('result-main').textContent=`${gua.situation}\n\n→ ${gua.advice}`;
-    stocksEl.style.display='none';
+    html+='</div></div>';
   }
 
-  const cx=window.innerWidth/2, cy=window.innerHeight/2;
-  for(let i=0;i<8;i++) setTimeout(()=>spawnParticles(cx+(Math.random()-0.5)*300,cy+(Math.random()-0.5)*300,'#f0d090',12),i*60);
-  transitionTo('s-gua','s-result');
-}
+  // 지괘 괘사
+  if(bi){
+    html+=`<div class="section"><h3>지괘 「${bi.name}」 괘사</h3><div class="body">${judgmentText(bi.num)}</div></div>`;
+  }
 
-/* ── 다시 뽑기 ── */
-function restart(){
-  throwCount=0; results=[]; isAnimating=false;
-  document.getElementById('yao-stack').innerHTML='';
-  document.getElementById('throw-hint').textContent='동전을 클릭해서 던지세요';
-  document.getElementById('throw-count').textContent='0 / 6';
-  document.getElementById('coin-area').style.pointerEvents='all';
-  // display 초기화
-  document.getElementById('result-stocks').removeAttribute('style');
-  document.getElementById('result-oneline').removeAttribute('style');
-  drawCoin(1,true,0.3);
-  transitionTo('s-result','s-mode');
+  resultEl.innerHTML=html;
+  resultEl.className='result show';
+  resultEl.scrollIntoView({behavior:'smooth',block:'start'});
 }
-
-/* ── 초기 동전 그리기 ── */
-drawCoin(1,true,0.3);
 </script>
 </body>
 </html>
