@@ -152,6 +152,28 @@ body { background: #010006; color: #ffffff; font-family: 'Nanum Myeongjo', serif
 </style>
 </head>
 <body>
+<!-- 카카오 애드핏 -->
+<div id="adfit-wrap" style="width:100%;text-align:center;padding:8px 0;background:rgba(0,0,0,0.5);position:relative;z-index:9999;">
+  <div class="adfit-mobile">
+    <ins class="kakao_ad_area" style="display:none;"
+      data-ad-unit="DAN-3LTEwOaioyE7lQCz"
+      data-ad-width="320"
+      data-ad-height="50"></ins>
+  </div>
+  <div class="adfit-pc">
+    <ins class="kakao_ad_area" style="display:none;"
+      data-ad-unit="DAN-uMyTu2tE4zdxRRT1"
+      data-ad-width="728"
+      data-ad-height="90"></ins>
+  </div>
+</div>
+<script type="text/javascript" src="//t1.kakaocdn.net/kas/static/ba.min.js" async></script>
+<style>
+#adfit-wrap{box-sizing:border-box;}
+@media(max-width:767px){ .adfit-pc{display:none;} .adfit-mobile{display:block;} }
+@media(min-width:768px){ .adfit-mobile{display:none;} .adfit-pc{display:block;} }
+</style>
+
 <div class="stars" id="stars"></div>
 
 <div class="topbar">
@@ -368,25 +390,5 @@ function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 
 loadPosts();
 </script>
-<!-- 카카오 애드핏 -->
-<div id="adfit-wrap" style="width:100%;text-align:center;padding:12px 0;background:rgba(0,0,0,0.3);">
-  <div class="adfit-mobile">
-    <ins class="kakao_ad_area" style="display:none;"
-      data-ad-unit="DAN-3LTEwOaioyE7lQCz"
-      data-ad-width="320"
-      data-ad-height="50"></ins>
-  </div>
-  <div class="adfit-pc">
-    <ins class="kakao_ad_area" style="display:none;"
-      data-ad-unit="DAN-uMyTu2tE4zdxRRT1"
-      data-ad-width="728"
-      data-ad-height="90"></ins>
-  </div>
-</div>
-<script type="text/javascript" src="//t1.kakaocdn.net/kas/static/ba.min.js" async></script>
-<style>
-@media(max-width:767px){ .adfit-pc{display:none;} .adfit-mobile{display:block;} }
-@media(min-width:768px){ .adfit-mobile{display:none;} .adfit-pc{display:block;} }
-</style>
 </body>
 </html>
