@@ -299,7 +299,7 @@ body {
 </head>
 <body>
 <!-- 카카오 애드핏 -->
-<div id="adfit-wrap" style="width:100%;text-align:center;padding:8px 0;background:rgba(0,0,0,0.5);position:relative;z-index:9999;">
+<div id="adfit-wrap" style="position:fixed;top:0;left:0;right:0;width:100%;text-align:center;padding:6px 0;background:rgba(0,0,0,0.7);z-index:99999;box-sizing:border-box;">
   <div class="adfit-mobile">
     <ins class="kakao_ad_area" style="display:none;"
       data-ad-unit="DAN-3LTEwOaioyE7lQCz"
@@ -315,11 +315,9 @@ body {
 </div>
 <script type="text/javascript" src="//t1.kakaocdn.net/kas/static/ba.min.js" async></script>
 <style>
-#adfit-wrap{box-sizing:border-box;}
 @media(max-width:767px){ .adfit-pc{display:none;} .adfit-mobile{display:block;} }
 @media(min-width:768px){ .adfit-mobile{display:none;} .adfit-pc{display:block;} }
 </style>
-
 
 <div class="menu-overlay" id="menuOverlay">
   <div class="menu-close" id="menuClose">&#x2715;</div>
